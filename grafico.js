@@ -1,0 +1,154 @@
+function resizeCanvas(canvas, chart) {
+    const container = canvas.parentNode;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
+    if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+        chart.resize();
+    }
+}
+
+// Configurações padrão dos gráficos com duas séries de valores
+const chartConfig = {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [
+            {
+                label: 'θ1',
+                data: [],
+                borderColor: 'rgba(255, 0, 0, 1)',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: 'θ2',
+                data: [],
+                borderColor: 'rgba(0, 255, 0, 1)',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: 'θ3',
+                data: [],
+                borderColor: 'rgba(0, 0, 255, 1)',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: 'θ4',
+                data: [],
+                borderColor: 'rgba(255, 0, 255, 1)',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: 'θ5',
+                data: [],
+                borderColor: 'rgba(255, 170, 50, 1)',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            },
+            {
+                label: 'θ6',
+                data: [],
+                borderColor: 'rgba(0, 255, 255, 1)',
+                borderWidth: 1,
+                fill: false,
+                pointRadius: 0
+            }
+        ]
+    },
+    options: {
+        responsive: false,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom', // Move a legenda para baixo
+                labels: {
+                    usePointStyle: true,
+                    pointStyle: 'line',
+                    borderWidth: 6
+                }
+            },
+            title: {
+                display: true,
+                text: ''
+            }
+        },
+        scales: {
+            x: {
+                type: 'linear',
+                position: 'bottom'
+                // title: {
+                //     display: true,
+                //     text: 't [ s ]' // Texto será configurado para cada gráfico individualmente
+                // }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: '' // Texto será configurado para cada gráfico individualmente
+                }
+            }
+        }
+    }
+};
+
+const ctx1 = document.getElementById('gPos').getContext('2d');
+const ctx2 = document.getElementById('gVel').getContext('2d');
+const ctx3 = document.getElementById('gAce').getContext('2d');
+
+// Criação dos gráficos com títulos diferentes
+const chartConfig1 = JSON.parse(JSON.stringify(chartConfig));
+chartConfig1.options.plugins.title.text = 'Posição';
+chartConfig1.options.scales.y.title.text = 'p [ rad ]';
+const chart1 = new Chart(ctx1, chartConfig1);
+
+const chartConfig2 = JSON.parse(JSON.stringify(chartConfig));
+chartConfig2.options.plugins.title.text = 'Velocidade';
+chartConfig2.options.scales.y.title.text = 'v [ rad / s ]';
+const chart2 = new Chart(ctx2, chartConfig2);
+
+const chartConfig3 = JSON.parse(JSON.stringify(chartConfig));
+chartConfig3.options.plugins.title.text = 'Aceleração';
+chartConfig3.options.scales.y.title.text = 'a [ rad / s^2 ]';
+const chart3 = new Chart(ctx3, chartConfig3);
+
+// Redimensionar os canvas ao carregar e quando a janela é redimensionada
+function resizeCharts() {
+    resizeCanvas(ctx1.canvas, chart1);
+    resizeCanvas(ctx2.canvas, chart2);
+    resizeCanvas(ctx3.canvas, chart3);
+}
+
+window.addEventListener('resize', resizeCharts);
+window.addEventListener('load', resizeCharts);
+
+// Função para adicionar dados aos gráficos
+function addData(chart, label, data1, data2, data3, data4, data5, data6) {
+    chart.data.labels.push(label);
+    chart.data.datasets[0].data.push(data1);
+    chart.data.datasets[1].data.push(data2);
+    chart.data.datasets[2].data.push(data3);
+    chart.data.datasets[3].data.push(data4);
+    chart.data.datasets[4].data.push(data5);
+    chart.data.datasets[5].data.push(data6);
+    chart.update('none');
+}
+
+// // Exemplo de como adicionar dados aos gráficos
+// setInterval(() => {
+//     const newData1 = Math.random() * 100;
+//     const newData2 = Math.random() * 100;
+//     const newLabel = chart1.data.labels.length;
+//     addData(chart1, newLabel, newData1, newData2, newData1+newData2, newData1*1.4, -newData1/2, newData2/2);
+//     addData(chart2, newLabel, newData1 / -2, newData2 / 2, newData1+newData2, newData1*2, newData2/2, newData1/2);
+//     addData(chart3, newLabel, newData1 / 1, newData2 / -3, newData1+newData2, newData1*2, newData2/2, newData1/2);
+// }, 1000);

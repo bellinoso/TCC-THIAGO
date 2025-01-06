@@ -36,7 +36,8 @@ var createScene =  function () {
     
     var importedMeshes = [];
     // Importando modelos STL
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/ravendano014/roboticarm/main/models/", "Base.STL", scene, function (newMeshes) {
+        // BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/ravendano014/roboticarm/main/models/", "Base.STL", scene, function (newMeshes) {
+            BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Base.stl", scene, function (newMeshes) {
         // BABYLON.SceneLoader.ImportMesh("", "https://drive.google.com/uc?export=download&id=11xf26LhumD7tMM-ZYkFRFHQ5nYh5GDPr", "base.STL", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));

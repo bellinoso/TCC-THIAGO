@@ -1,0 +1,13 @@
+CAD
+
+Base
+    Altura 200
+
+Waist
+    Offset 100
+    Altura furo 130
+
+Arm 1
+    Comprimento 400
+    diametro furo   15
+

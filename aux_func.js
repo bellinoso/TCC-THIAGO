@@ -1,3 +1,58 @@
+// Função para criar um slider com um campo de texto
+function createSliderWithText(min, max, initialValue, onChange, labelText) {
+    var container = new BABYLON.GUI.StackPanel();
+    container.isVertical = true;
+    container.height = "50px";
+    container.width = "220px";
+
+    var label = new BABYLON.GUI.TextBlock();
+    label.text = labelText;
+    label.height = "20px";
+    label.color = "white";
+    label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    container.addControl(label);
+
+    var sliderContainer = new BABYLON.GUI.StackPanel();
+    sliderContainer.isVertical = false;
+    sliderContainer.height = "30px";
+    sliderContainer.width = "220px";
+
+    var slider = new BABYLON.GUI.Slider();
+    slider.minimum = min;
+    slider.maximum = max;
+    slider.value = initialValue;
+    slider.height = "20px";
+    slider.width = "150px";
+    slider.color = "white";
+    slider.background = "gray";
+    slider.onValueChangedObservable.add(function (value) {
+        inputText.text = value.toFixed(2);
+        onChange(value);
+    });
+
+    var inputText = new BABYLON.GUI.InputText();
+    inputText.width = "60px"; // Aumentando a largura da caixa de texto
+    inputText.text = initialValue.toFixed(2);
+    inputText.color = "white";
+    inputText.background = "gray";
+    inputText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    inputText.onBlurObservable.add(function () {
+        var value = parseFloat(inputText.text);
+        if (!isNaN(value) && value >= min && value <= max) {
+            slider.value = value;
+            onChange(value);
+        } else {
+            inputText.text = slider.value.toFixed(2);
+        }
+    });
+
+    sliderContainer.addControl(slider);
+    sliderContainer.addControl(inputText);
+    container.addControl(sliderContainer);
+
+    return container;
+}
+
 var startRenderLoop = function (engine, canvas) {
     engine.runRenderLoop(function () {
         if (sceneToRender && sceneToRender.activeCamera) {
@@ -8,7 +63,7 @@ var startRenderLoop = function (engine, canvas) {
 
 function showAxis(scene, parent) {
 
-    size = 50
+    size = 200
 
     var makeCylinder = function(name, color, rotation, position) {
         var cylinder = BABYLON.MeshBuilder.CreateCylinder(name, {

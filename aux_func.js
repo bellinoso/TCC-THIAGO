@@ -1,3 +1,7 @@
+function ajustarAngulo(angulo) {
+    return ((angulo % 360) + 360) % 360;
+}
+
 // Função para criar um slider com um campo de texto
 function createSliderWithText(min, max, initialValue, onChange, labelText) {
     var container = new BABYLON.GUI.StackPanel();

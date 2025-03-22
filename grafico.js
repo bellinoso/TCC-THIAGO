@@ -1,3 +1,18 @@
+function toggleCharts() {
+        var chartsZone = document.getElementById('chartsZone');
+        var canvasZone = document.getElementById('canvasZone');
+        var displayStyle = window.getComputedStyle(chartsZone).display;
+    
+        if (displayStyle === 'none' || displayStyle === '') {
+            chartsZone.style.display = 'flex';
+            canvasZone.style.height = '65%'; // Ajuste conforme necessário
+        } else {
+            chartsZone.style.display = 'none';
+            canvasZone.style.height = '100%';
+        }
+        engine.resize();
+    }
+
 function resizeCanvas(canvas, chart) {
     const container = canvas.parentNode;
     const width = container.clientWidth;
@@ -9,7 +24,6 @@ function resizeCanvas(canvas, chart) {
     }
 }
 
-// Configurações padrão dos gráficos com duas séries de valores
 const chartConfig = {
     type: 'line',
     data: {

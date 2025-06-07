@@ -41,7 +41,7 @@ var createScene =  function () {
 
     var importedMeshes = [];
     // Importando modelos STL
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/alteração_stl/Modelos/", "Base.stl", scene, function (newMeshes) {
+        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Base.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = base;
@@ -50,7 +50,7 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/alteração_stl/Modelos/", "Waist.stl", scene, function (newMeshes) {
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Waist.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = waist;
@@ -59,7 +59,7 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/alteração_stl/Modelos/", "Arm1.stl", scene, function (newMeshes) {
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Arm1.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = arm1; 
@@ -68,7 +68,7 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/alteração_stl/Modelos/", "Arm2.stl", scene, function (newMeshes) {
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Arm2.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = arm2;
@@ -78,7 +78,7 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/alteração_stl/Modelos/", "Wrist.stl", scene, function (newMeshes) {
+        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Wrist.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = wrist;
@@ -188,6 +188,34 @@ var createScene =  function () {
     UiPanelLeft.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     UiPanelLeft.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
     advancedTexture.addControl(UiPanelLeft);
+
+    var isUiPanelLeftVisible = false; // State to track visibility, initially minimized
+
+    // Toggle button for UiPanelLeft
+    var toggleUiPanelLeftButton = GUI.Button.CreateSimpleButton("toggleUiPanelLeftButton", "▶ Visibility options");
+    toggleUiPanelLeftButton.paddingTop = "10px";
+    toggleUiPanelLeftButton.width = "150px";
+    toggleUiPanelLeftButton.height = "40px";
+    toggleUiPanelLeftButton.color = "white";
+    toggleUiPanelLeftButton.background = "gray";
+    toggleUiPanelLeftButton.onPointerUpObservable.add(function () {
+        isUiPanelLeftVisible = !isUiPanelLeftVisible;
+        UiPanelLeft.children.forEach(function (child) {
+            if (child !== toggleUiPanelLeftButton) {
+                child.isVisible = isUiPanelLeftVisible;
+                child.left = isUiPanelLeftVisible ? "20px" : "0px"; // Indent child buttons when visible
+            }
+        });
+        toggleUiPanelLeftButton.textBlock.text = isUiPanelLeftVisible ? "▼ Visibility options" : "▶ Visibility options";
+    });
+    UiPanelLeft.addControl(toggleUiPanelLeftButton);
+
+    // Initially hide child buttons
+    UiPanelLeft.children.forEach(function (child) {
+        if (child !== toggleUiPanelLeftButton) {
+            child.isVisible = false;
+        }
+    });
     
     // Adicionando slider para waist.rotation.z
     var sliderWaistContainer = createSliderWithText(0, 360, 180, function (value) {
@@ -305,6 +333,20 @@ var createScene =  function () {
     });
     UiPanelLeft.addControl(toggleChartsButton);
 
+    // Add child buttons to UiPanelLeft
+    UiPanelLeft.addControl(startStopButton);
+    UiPanelLeft.addControl(toggleAxisButton);
+    UiPanelLeft.addControl(toggleModelsButton);
+    UiPanelLeft.addControl(toggleTransparencyButton);
+    UiPanelLeft.addControl(toggleChartsButton);
+
+    // Initially hide child buttons
+    UiPanelLeft.children.forEach(function (child) {
+        if (child !== toggleUiPanelLeftButton) {
+            child.isVisible = false;
+        }
+    });
+
     // Controle manual pelo teclado
     var rotationSpeed = 0.03;
     window.addEventListener("keydown", function (event) {
@@ -342,11 +384,31 @@ var createScene =  function () {
         }
     });
 
+    
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    ///////SALVAR POSICIONAMENTO
+    ///////////////////////////////////////////////////////////////////////////////////////////
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    ///////ROTINA MANUAL DEMO
+    ///////////////////////////////////////////////////////////////////////////////////////////
+    
     // Variavel que controla o estado da rotina
     var isRoutineRunning = false;
-    
     // Iniciar a rotina
     function startRoutine() {
         if (!isRoutineRunning) {
@@ -412,7 +474,9 @@ var createScene =  function () {
 
         }
     }
-
+///////////////////////////////////////////////////////////////////////////////////////////
+///////FIM ROTINA DEMO
+///////////////////////////////////////////////////////////////////////////////////////////
     return scene;
 };
 window.initFunction = async function () {

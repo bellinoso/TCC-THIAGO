@@ -72,7 +72,7 @@ var createScene =  function () {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = arm2;
-        importedMesh.rotation.x = BABYLON.Tools.ToRadians(90);
+        importedMesh.rotation.x = BABYLON.Tools.ToRadians(-90);
         importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
         importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
@@ -161,8 +161,7 @@ var createScene =  function () {
     arm2.parent = servo02;
 
     var servo03 = BABYLON.MeshBuilder.CreateBox("servo03", { width: 1, height: 1, depth: 1 }, scene);
-    // servo03.position.y = -250;
-    servo03.rotation.x = BABYLON.Tools.ToRadians(90);
+    servo03.rotation.x = BABYLON.Tools.ToRadians(-90);
     servo03.parent = arm2;
     var servo03Axis = showAxis(scene,servo03);
 
@@ -338,10 +337,10 @@ var createScene =  function () {
     toggleAxisButton.onPointerUpObservable.add(function() {
         axesVisible = !axesVisible;
         // toggleAxisVisibility(baseAxis, axesVisible);
-        // toggleAxisVisibility(servoWaistAxis, axesVisible);
+        // // toggleAxisVisibility(servoWaistAxis, axesVisible);
         // toggleAxisVisibility(servo01Axis, axesVisible);
         // toggleAxisVisibility(servo02Axis, axesVisible);
-        // toggleAxisVisibility(servo03Axis, axesVisible);
+        toggleAxisVisibility(servo03Axis, axesVisible);
         toggleAxisVisibility(servo04Axis, axesVisible);
         toggleAxisVisibility(servoFingerAxis, axesVisible);
         

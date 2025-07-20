@@ -88,7 +88,8 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Hand.stl", scene, function (newMeshes) {
+        // BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Hand.stl", scene, function (newMeshes) {
+        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Hand_v2.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = hand;
@@ -96,29 +97,6 @@ var createScene =  function () {
         importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
         importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
         importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0); 
-        importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
-    });
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Finger.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = finger1;
-        importedMesh.rotation.z = BABYLON.Tools.ToRadians(-90);
-        importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
-        importedMesh.position.y = 10;
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); 
-        importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
-    });
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Finger.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = finger2;
-        importedMesh.rotation.z = BABYLON.Tools.ToRadians(90);
-        importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
-        importedMesh.position.y = -10;
-        importedMesh.position.z = 0
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); 
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
 

@@ -99,6 +99,16 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0); 
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
+    //     BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Hand_v2.stl", scene, function (newMeshes) {
+    //     var importedMesh = newMeshes[0];
+    //     importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+    //     importedMesh.parent = hand;
+    //     importedMesh.rotation.x = BABYLON.Tools.ToRadians(90);
+    //     importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
+    //     importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+    //     importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0); 
+    //     importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
+    // });
 
     // Tratamento de redimensionamento da janela
     window.addEventListener("resize", function () {

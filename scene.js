@@ -6,8 +6,14 @@ var sceneToRender = null;
 var createDefaultEngine = function () { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, disableWebGL2Support: false }); };
 
 var createScene =  function () {
-    
     var scene = new BABYLON.Scene(engine);
+
+    // O BABYLON.JS não usa a convenção de sistema de coordenadas Z-up do CAD
+    // Necessario o comando abaixo para respeitar a regra da mao direita.
+    //(perdi um tempinho bom nisso aqui)
+    scene.useRightHandedSystem = true
+    
+    
     scene.clearColor = new BABYLON.Color4(0.2, 0.3, 0.5, 1); // RGBA values: Red, Green, Blue, Alpha
     var camera = new BABYLON.ArcRotateCamera("Camera", BABYLON.Tools.ToRadians(45), BABYLON.Tools.ToRadians(60), 500, new BABYLON.Vector3(0, 450, 0), scene);
     
@@ -32,16 +38,15 @@ var createScene =  function () {
     light.intensity = 0.7 ;
     
     // Adicione os eixos XYZ à cena
-    var globalAxes = showAxis(scene);
+    // var globalAxes = showAxis(scene);
     
 ///////////////////////////////////////////////////////////////////////////////////////////
 ///////IMPORTANDO E POSICIONANDO MODELOS
 ///////////////////////////////////////////////////////////////////////////////////////////
 
-
     var importedMeshes = [];
     // Importando modelos STL
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Base.stl", scene, function (newMeshes) {
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Base.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = base;
@@ -78,7 +83,7 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Wrist.stl", scene, function (newMeshes) {
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Wrist.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = wrist;
@@ -88,8 +93,7 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
-        // BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Hand.stl", scene, function (newMeshes) {
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Hand_v2.stl", scene, function (newMeshes) {
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Hand_v2.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = hand;
@@ -99,7 +103,7 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0); 
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
-        BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Claw.stl", scene, function (newMeshes) {
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Claw.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = Claw;
@@ -121,7 +125,7 @@ var createScene =  function () {
 
     var base = BABYLON.MeshBuilder.CreateBox("base", { width: 0.1, height: 0.1, depth: 0.1 }, scene);
     base.rotation.x = BABYLON.Tools.ToRadians(-90);
-    var baseAxis = showAxis(scene,base);
+    // var baseAxis = showAxis(scene,base);
 
     var servoWaist = BABYLON.MeshBuilder.CreateBox("servoWaist", { width: 0.1, height: 0.1, depth: 0.1 }, scene);
     servoWaist.position.z = 200;
@@ -255,50 +259,49 @@ var createScene =  function () {
     });
     
     // Adicionando slider para waist.rotation.z
-    var sliderWaistContainer = createSliderWithText(0, 360, 180, function (value) {
-        waist.rotation.z = BABYLON.Tools.ToRadians(value+180);
-    }, "Waist");
+    var sliderWaistContainer = createSliderWithText(0, 360, 270, function (value) {
+        waist.rotation.z = BABYLON.Tools.ToRadians(value+270);
+    }, "Servo1");
     UiPanelRight.addControl(sliderWaistContainer);
     
     // Adicionando slider para arm1.rotation.z
     var sliderArm1Container = createSliderWithText(0, 180, 90, function (value) {
         arm1.rotation.z = BABYLON.Tools.ToRadians(value-90);
-    }, "Arm1");
+    }, "Servo2");
     UiPanelRight.addControl(sliderArm1Container);
     
     // Adicionando slider para arm2.rotation.z
     var sliderArm2Container = createSliderWithText(-55, 235, 0, function (value) {
         // arm2.rotation.z = value * (Math.PI / 50) - Math.PI;
         arm2.rotation.z = BABYLON.Tools.ToRadians(value);
-    }, "Arm2");
+    }, "Servo3");
     UiPanelRight.addControl(sliderArm2Container);
 
     // Adicionando slider para wrist.rotation.z
     var sliderWristContainer = createSliderWithText(0, 100, 50, function (value) {
         wrist.rotation.z = value * (Math.PI / 50) - Math.PI;
-    }, "Wrist");
+    }, "Servo4");
     UiPanelRight.addControl(sliderWristContainer);
 
     // Adicionando slider para hand.rotation.z
     var sliderHandContainer = createSliderWithText(-90, 90, 0, function (value) {
         hand.rotation.z = BABYLON.Tools.ToRadians(value);
-    }, "Hand");
+    }, "Servo5");
     UiPanelRight.addControl(sliderHandContainer);
 
-    // var sliderFingerContainer = createSliderWithText(0, 35, 0, function (value) {
-    //     finger1.position.z = -value;
-    //     finger2.position.z = value;
-    // }, "Finger");
-    // UiPanelRight.addControl(sliderFingerContainer);
+    var sliderClawContainer = createSliderWithText(0, 360, 180, function (value) {
+        Claw.rotation.z = BABYLON.Tools.ToRadians(value);
+    }, "Servo6");
+    UiPanelRight.addControl(sliderClawContainer);
 
 
     function updateSliders() {
-        sliderWaistContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(waist.rotation.z)+180);
+        sliderWaistContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(waist.rotation.z)+270);
         sliderArm1Container.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(arm1.rotation.z)+90);
         sliderArm2Container.children[1].children[0].value = BABYLON.Tools.ToDegrees(arm2.rotation.z);
         sliderWristContainer.children[1].children[0].value = (wrist.rotation.z + Math.PI) * (50 / Math.PI);
         sliderHandContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(hand.rotation.z);
-        // sliderFingerContainer.children[1].children[0].value = -finger1.position.z;
+        sliderClawContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(Claw.rotation.z)+180);
     }
         // Adicionando a função de atualização ao observador onBeforeRenderObservable
     scene.onBeforeRenderObservable.add(function () {
@@ -336,14 +339,14 @@ var createScene =  function () {
     toggleAxisButton.background = "blue";
     toggleAxisButton.onPointerUpObservable.add(function() {
         axesVisible = !axesVisible;
-        toggleAxisVisibility(baseAxis, axesVisible);
+        // toggleAxisVisibility(baseAxis, axesVisible);
         toggleAxisVisibility(servoWaistAxis, axesVisible);
         toggleAxisVisibility(servo01Axis, axesVisible);
         toggleAxisVisibility(servo02Axis, axesVisible);
         toggleAxisVisibility(servo03Axis, axesVisible);
         toggleAxisVisibility(servo04Axis, axesVisible);
         toggleAxisVisibility(servo05Axis, axesVisible);
-        // toggleAxisVisibility(servoFingerAxis, axesVisible);
+        toggleAxisVisibility(servoFingerAxis, axesVisible);
         
     });
     UiPanelLeft.addControl(toggleAxisButton);
@@ -384,6 +387,9 @@ var createScene =  function () {
         toggleCharts()
     });
     UiPanelLeft.addControl(toggleChartsButton);
+    
+    //Gráficos inicialmente ocultos.
+    toggleCharts()
 
     // Add child buttons to UiPanelLeft
     UiPanelLeft.addControl(startStopButton);
@@ -404,28 +410,28 @@ var createScene =  function () {
     var linearSpeed = 1;
     window.addEventListener("keydown", function (event) {
         switch (event.key) {
-            case "ArrowLeft":
+            case "q":
                 waist.rotation.z -= rotationSpeed; 
                 break;
-            case "ArrowRight": 
+            case "w": 
                 waist.rotation.z += rotationSpeed; 
                 break;
-            case "ArrowUp":
+            case "e":
                 arm1.rotation.z -= rotationSpeed;
                 break;
-            case "ArrowDown":
+            case "r":
                 arm1.rotation.z += rotationSpeed;
                 break;
-            case "w":
+            case "a":
                 arm2.rotation.z -= rotationSpeed;
                 break;
-            case "e":
+            case "s":
                 arm2.rotation.z += rotationSpeed;
                 break;
-            case "s":
+            case "d":
                 wrist.rotation.z -= rotationSpeed;
                 break;
-            case "d":
+            case "f":
                 wrist.rotation.z += rotationSpeed;
                 break;
             case "x":
@@ -444,25 +450,11 @@ var createScene =  function () {
                     hand.rotation.z += rotationSpeed;
                 }
                 break;
-            case "v":
-                // Limita a posição máxima do dedo em 35
-                if (finger2.position.z + linearSpeed > 35) {
-                    finger1.position.z = -35;
-                    finger2.position.z = 35;
-                } else {
-                    finger1.position.z -= linearSpeed;
-                    finger2.position.z += linearSpeed;
-                }
+            case "c":
+                Claw.rotation.z -= rotationSpeed; 
                 break;
-            case "c":  
-                // Limita a posição minima do dedo em 0
-                if (finger1.position.z + linearSpeed > 0) {
-                    finger1.position.z = 0;
-                    finger2.position.z = 0;
-                } else {
-                    finger1.position.z += linearSpeed;
-                    finger2.position.z -= linearSpeed;
-                }
+            case "v": 
+                Claw.rotation.z += rotationSpeed; 
                 break;
         }
     });

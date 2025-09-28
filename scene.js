@@ -59,7 +59,9 @@ var createScene =  function () {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
         importedMesh.parent = waist;
-        importedMesh.rotation.x = BABYLON.Tools.ToRadians(90);
+        // importedMesh.rotation.x = BABYLON.Tools.ToRadians(90);
+        importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
+        importedMesh.rotation.z = BABYLON.Tools.ToRadians(90);
         importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
@@ -125,80 +127,60 @@ var createScene =  function () {
 
     var base = BABYLON.MeshBuilder.CreateBox("base", { width: 0.1, height: 0.1, depth: 0.1 }, scene);
     base.rotation.x = BABYLON.Tools.ToRadians(-90);
-    // var baseAxis = showAxis(scene,base);
 
     var servoWaist = BABYLON.MeshBuilder.CreateBox("servoWaist", { width: 0.1, height: 0.1, depth: 0.1 }, scene);
     servoWaist.position.z = 200;
     servoWaist.parent = base;
-    var servoWaistAxis = showAxis(scene,servoWaist);
-
+    
     var waist = BABYLON.MeshBuilder.CreateBox("waist", { width: 1, height: 1, depth: 1 }, scene);
     waist.parent = servoWaist;
-
+    
     var servo01 = BABYLON.MeshBuilder.CreateBox("servo01", { width: 1, height: 1, depth: 1 }, scene);
-    servo01.position.y = -100;
+    servo01.position.x = 100;
     servo01.position.z = 130;
-    servo01.rotation.z = BABYLON.Tools.ToRadians(-90);
-    servo01.rotation.y = BABYLON.Tools.ToRadians(-90);
+    servo01.rotation.x = BABYLON.Tools.ToRadians(90);
+    // servo01.rotation.y = BABYLON.Tools.ToRadians(-90);
     servo01.parent = waist;
-    var servo01Axis = showAxis(scene,servo01)
-
+    
     var arm1 = BABYLON.MeshBuilder.CreateBox("arm1", { width: 1, height: 1, depth: 1 }, scene);
     arm1.parent = servo01;
-
+    
     var servo02 = BABYLON.MeshBuilder.CreateBox("servo02", { width: 1, height: 1, depth: 1 }, scene);
     servo02.position.y = 400;
     servo02.rotation.z = BABYLON.Tools.ToRadians(90);
     servo02.parent = arm1;
-    var servo02Axis = showAxis(scene,servo02);
-
+    
     var arm2 = BABYLON.MeshBuilder.CreateBox("arm2", { width: 1, height: 1, depth: 1 }, scene);
     arm2.parent = servo02;
-
+    
     var servo03 = BABYLON.MeshBuilder.CreateBox("servo03", { width: 1, height: 1, depth: 1 }, scene);
     servo03.rotation.x = BABYLON.Tools.ToRadians(-90);
     servo03.parent = arm2;
-    var servo03Axis = showAxis(scene,servo03);
-
+    
     var wrist = BABYLON.MeshBuilder.CreateBox("wrist", { width: 1, height: 1, depth: 1 }, scene);
     wrist.parent = servo03;
-
+    
     var servo04 = BABYLON.MeshBuilder.CreateBox("servo04", { width: 1, height: 1, depth: 1 }, scene);
     servo04.position.z = 375
     servo04.rotation.x = BABYLON.Tools.ToRadians(-90);
     servo04.parent = wrist;
-    var servo04Axis = showAxis(scene,servo04);
-
+    
     var hand = BABYLON.MeshBuilder.CreateBox("hand", { width: 1, height: 1, depth: 1 }, scene);
     hand.parent = servo04;
-
+    
     var servo05 = BABYLON.MeshBuilder.CreateBox("servo05", { width: 1, height: 1, depth: 1 }, scene);
     servo05.position.y = -75
     servo05.rotation.x = BABYLON.Tools.ToRadians(90);
     servo05.parent = hand;
-    var servo05Axis = showAxis(scene,servo05);
-
+    
     var Claw = BABYLON.MeshBuilder.CreateBox("Claw", { width: 1, height: 1, depth: 1 }, scene);
     Claw.parent = servo05;
-
-    // var servoFinger = BABYLON.MeshBuilder.CreateBox("servoFinger", { width: 1, height: 1, depth: 1 }, scene);
-    // servoFinger.parent = hand;
-    // servoFinger.position.y = -80
-    // servoFinger.rotation.y = BABYLON.Tools.ToRadians(90);
-    // servoFinger.rotation.z = BABYLON.Tools.ToRadians(-90);
-    // var servoFingerAxis = showAxis(scene,servoFinger);
-
-    // var finger1 = BABYLON.MeshBuilder.CreateBox("finger1", { width: 1, height: 1, depth: 1 }, scene);
-    // finger1.parent = servoFinger;   
-
-    // var finger2 = BABYLON.MeshBuilder.CreateBox("finger2", { width: 1, height: 1, depth: 1 }, scene);
-    // finger2.parent = servoFinger;   
-
+    
     // Inicia a engine
     engine.runRenderLoop(function () {
         scene.render();
     });
-
+    
     
     var GUI = BABYLON.GUI;
     // Instancia para GUI
@@ -229,9 +211,9 @@ var createScene =  function () {
     UiPanelLeft.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     UiPanelLeft.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
     advancedTexture.addControl(UiPanelLeft);
-
+    
     var isUiPanelLeftVisible = false; // State to track visibility, initially minimized
-
+    
     // Toggle button for UiPanelLeft
     var toggleUiPanelLeftButton = GUI.Button.CreateSimpleButton("toggleUiPanelLeftButton", "▶ Visibility options");
     toggleUiPanelLeftButton.paddingTop = "10px";
@@ -250,7 +232,7 @@ var createScene =  function () {
         toggleUiPanelLeftButton.textBlock.text = isUiPanelLeftVisible ? "▼ Visibility options" : "▶ Visibility options";
     });
     UiPanelLeft.addControl(toggleUiPanelLeftButton);
-
+    
     // Initially hide child buttons
     UiPanelLeft.children.forEach(function (child) {
         if (child !== toggleUiPanelLeftButton) {
@@ -259,8 +241,8 @@ var createScene =  function () {
     });
     
     // Adicionando slider para waist.rotation.z
-    var sliderWaistContainer = createSliderWithText(0, 360, 270, function (value) {
-        waist.rotation.z = BABYLON.Tools.ToRadians(value+270);
+    var sliderWaistContainer = createSliderWithText(0, 360, 0, function (value) {
+        waist.rotation.z = BABYLON.Tools.ToRadians(value+0);
     }, "Servo1");
     UiPanelRight.addControl(sliderWaistContainer);
     
@@ -276,40 +258,37 @@ var createScene =  function () {
         arm2.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo3");
     UiPanelRight.addControl(sliderArm2Container);
-
+    
     // Adicionando slider para wrist.rotation.z
     var sliderWristContainer = createSliderWithText(0, 100, 50, function (value) {
         wrist.rotation.z = value * (Math.PI / 50) - Math.PI;
     }, "Servo4");
     UiPanelRight.addControl(sliderWristContainer);
-
+    
     // Adicionando slider para hand.rotation.z
     var sliderHandContainer = createSliderWithText(-90, 90, 0, function (value) {
         hand.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo5");
     UiPanelRight.addControl(sliderHandContainer);
-
+    
     var sliderClawContainer = createSliderWithText(0, 360, 180, function (value) {
         Claw.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo6");
     UiPanelRight.addControl(sliderClawContainer);
-
-
+    
+    
     function updateSliders() {
-        sliderWaistContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(waist.rotation.z)+270);
+        sliderWaistContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(waist.rotation.z)+0);
         sliderArm1Container.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(arm1.rotation.z)+90);
         sliderArm2Container.children[1].children[0].value = BABYLON.Tools.ToDegrees(arm2.rotation.z);
         sliderWristContainer.children[1].children[0].value = (wrist.rotation.z + Math.PI) * (50 / Math.PI);
         sliderHandContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(hand.rotation.z);
         sliderClawContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(Claw.rotation.z)+180);
     }
-        // Adicionando a função de atualização ao observador onBeforeRenderObservable
+    // Adicionando a função de atualização ao observador onBeforeRenderObservable
     scene.onBeforeRenderObservable.add(function () {
         updateSliders();
     });
-
-    // Inicialmente, definir visibilidade dos eixos como falsa
-    var axesVisible = false;
     
     // Botao de Start/Stop
     var startStopButton = GUI.Button.CreateSimpleButton("startStopButton", "Start");
@@ -331,6 +310,16 @@ var createScene =  function () {
     });
     UiPanelLeft.addControl(startStopButton);
     
+    // Inicialmente, definir visibilidade dos eixos como falsa
+    var axesVisible = false;
+    // Variáveis para armazenar os eixos
+    var servoWaistAxis = null;
+    var servo01Axis = null;
+    var servo02Axis = null;
+    var servo03Axis = null;
+    var servo04Axis = null;
+    var servo05Axis = null;
+    
     var toggleAxisButton = GUI.Button.CreateSimpleButton("toggleAxisButton", "Toggle Axes");
     toggleAxisButton.paddingTop = "10px";
     toggleAxisButton.width = "150px";
@@ -339,15 +328,22 @@ var createScene =  function () {
     toggleAxisButton.background = "blue";
     toggleAxisButton.onPointerUpObservable.add(function() {
         axesVisible = !axesVisible;
-        // toggleAxisVisibility(baseAxis, axesVisible);
-        toggleAxisVisibility(servoWaistAxis, axesVisible);
-        toggleAxisVisibility(servo01Axis, axesVisible);
-        toggleAxisVisibility(servo02Axis, axesVisible);
-        toggleAxisVisibility(servo03Axis, axesVisible);
-        toggleAxisVisibility(servo04Axis, axesVisible);
-        toggleAxisVisibility(servo05Axis, axesVisible);
-        toggleAxisVisibility(servoFingerAxis, axesVisible);
-        
+        if (axesVisible) {
+            servoWaistAxis = showAxis(scene,servoWaist);
+            servo01Axis = showAxis(scene,servo01);
+            servo02Axis = showAxis(scene,servo02);
+            servo03Axis = showAxis(scene,servo03);
+            servo04Axis = showAxis(scene,servo04);
+            servo05Axis = showAxis(scene,servo05);
+        }
+        if (!axesVisible) {
+            if (servoWaistAxis) { servoWaistAxis.dispose(); servoWaistAxis = null; }
+            if (servo01Axis) { servo01Axis.dispose(); servo01Axis = null; }
+            if (servo02Axis) { servo02Axis.dispose(); servo02Axis = null; }
+            if (servo03Axis) { servo03Axis.dispose(); servo03Axis = null; }
+            if (servo04Axis) { servo04Axis.dispose(); servo04Axis = null; }
+            if (servo05Axis) { servo05Axis.dispose(); servo05Axis = null; }
+        }
     });
     UiPanelLeft.addControl(toggleAxisButton);
     

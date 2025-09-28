@@ -109,16 +109,15 @@ function showAxis(scene, parent) {
         axesViewer.yAxis.parent = parent;
         axesViewer.zAxis.parent = parent;
     }
-    return [axesViewer.xAxis, axesViewer.yAxis, axesViewer.zAxis];
+    return axesViewer;
 
 }
 
-function toggleAxisVisibility(axes, visible) {
-    axes.forEach(function(axis) {
-        axis.isVisible = visible;
-        axis.visibility = 0;
-    });
-}
+// function toggleAxisVisibility(axes, visible) {
+//     axes.forEach(function(axis) {
+//         axis.dispose()
+//     });
+// }
 
 function toggleTransparency(importedMeshes,transparent) {
     importedMeshes.forEach(function(mesh) {

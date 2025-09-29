@@ -56,16 +56,67 @@
             touch-action: none;
         }
 
+        #tabBar {
+            width: 100%;
+            height: 20px;
+            display: flex;
+            background: #eee;
+            border-top: 1px solid #ccc;
+        }
+        .tabButton {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 0.7em;
+            cursor: pointer;
+            padding: 2px 0;
+            transition: background 0.2s;
+        }
+        .tabButton.active {
+            background: #ddd;
+            font-weight: bold;
+        }
+        #tabContent {
+            width: 100%;
+            height: calc(35% - 40px);
+            position: relative;
+        }
+        .tabPane {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .tabPane.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <!-- <button id="toggleButton" onclick="toggleCharts()">Toggle Charts</button> -->
     <div id="mainContent">
         <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
-        <div id="chartsZone">
-            <div class="chartContainer"><canvas id="gPos"></canvas></div>
-            <div class="chartContainer"><canvas id="gVel"></canvas></div>
-            <div class="chartContainer"><canvas id="gAce"></canvas></div>
+        <div id="tabBar">
+            <button class="tabButton active" data-tab="charts">Gráficos</button>
+            <button class="tabButton" data-tab="instructions">Instruções</button>
+            <button class="tabButton" data-tab="data">Dados</button>
+            <button id="minimizeTabContent" title="Minimizar gráficos">✕</button>
+        </div>
+        <div id="tabContent">
+            <div class="tabPane active" id="tab-charts">
+                <div style="width:100%;height:100%;display:flex;justify-content:space-around">
+                    <div class="chartContainer"><canvas id="gPos"></canvas></div>
+                    <div class="chartContainer"><canvas id="gVel"></canvas></div>
+                    <div class="chartContainer"><canvas id="gAce"></canvas></div>
+                </div>
+            </div>
+            <div class="tabPane" id="tab-instructions">
+                <div style="padding:20px;">Instruções para uso do sistema.<br>Adicione aqui o texto ou conteúdo desejado.</div>
+            </div>
+            <div class="tabPane" id="tab-data">
+                <div style="padding:20px;">Dados numéricos e informações.<br>Adicione aqui tabelas ou outros dados.</div>
+            </div>
         </div>
     </div>
     <script src="aux_func.js"></script>

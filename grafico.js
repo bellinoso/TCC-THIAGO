@@ -1,14 +1,42 @@
+// Alternância de abas
+const tabButtons = document.querySelectorAll('.tabButton');
+const tabPanes = document.querySelectorAll('.tabPane');
+tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        var chartsZone = document.getElementById('tabContent');
+        var displayStyle = window.getComputedStyle(chartsZone).display;
+    
+        if (displayStyle === 'none' || displayStyle === '') {
+            toggleCharts()
+        }
+
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        tabPanes.forEach(pane => pane.classList.remove('active'));
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+let minimized = false;
+document.getElementById('minimizeTabContent').onclick = function() {
+    minimized = !minimized;
+    toggleCharts()
+    this.textContent = minimized ? '⧉' : '✕'; // Alterna ícone
+};
+
 function toggleCharts() {
-        var chartsZone = document.getElementById('chartsZone');
+        var chartsZone = document.getElementById('tabContent');
         var canvasZone = document.getElementById('canvasZone');
         var displayStyle = window.getComputedStyle(chartsZone).display;
     
         if (displayStyle === 'none' || displayStyle === '') {
             chartsZone.style.display = 'flex';
-            canvasZone.style.height = '65%'; // Ajuste conforme necessário
+            canvasZone.style.height = '65%'; 
+            document.getElementById('minimizeTabContent').textContent = '⧉'; // Mostrar o botão de minimizar
         } else {
             chartsZone.style.display = 'none';
             canvasZone.style.height = '100%';
+            document.getElementById('minimizeTabContent').textContent = '✕'; // Mostrar o botão de minimizar
         }
         engine.resize();
     }

@@ -262,7 +262,7 @@ var createScene =  function () {
     toggleUiPanelLeftButton.onPointerUpObservable.add(function () {
         isVisibilityVisible = !isVisibilityVisible;
         UiPanelLeft.children.forEach(function (child) {
-            const visibleButtons = [toggleAxisButton, toggleModelsButton, toggleTransparencyButton, toggleChartsButton];
+            const visibleButtons = [toggleAxisButton, toggleModelsButton, toggleTransparencyButton];
             if (visibleButtons.includes(child)) {
                 child.isVisible = isVisibilityVisible;
                 child.left = isVisibilityVisible ? "20px" : "0px"; // Indent child buttons when visible
@@ -333,31 +333,17 @@ var createScene =  function () {
         toggleTransparency(importedMeshes,transparent);
     });
     UiPanelLeft.addControl(toggleTransparencyButton);
-    
-    var toggleChartsButton = GUI.Button.CreateSimpleButton("toggleChartsButton", "Toggle Charts");
-    toggleChartsButton.paddingTop = "10px";
-    toggleChartsButton.width = "150px";
-    toggleChartsButton.height = "40px";
-    toggleChartsButton.color = "white";
-    toggleChartsButton.background = "blue";
-    toggleChartsButton.onPointerUpObservable.add(function() {
-        toggleCharts()
-    });
-    UiPanelLeft.addControl(toggleChartsButton);
-    
-    //Gráficos inicialmente ocultos.
-    // toggleCharts()
+
     
     // Add child buttons to UiPanelLeft
     UiPanelLeft.addControl(startStopButton);
     UiPanelLeft.addControl(toggleAxisButton);
     UiPanelLeft.addControl(toggleModelsButton);
     UiPanelLeft.addControl(toggleTransparencyButton);
-    UiPanelLeft.addControl(toggleChartsButton);
     
     // Initially hide child buttons
     UiPanelLeft.children.forEach(function (child) {
-        const visibleButtons = [toggleAxisButton, toggleModelsButton, toggleTransparencyButton, toggleChartsButton];
+        const visibleButtons = [toggleAxisButton, toggleModelsButton, toggleTransparencyButton];
         if (visibleButtons.includes(child)) {
             child.isVisible = false;
         }

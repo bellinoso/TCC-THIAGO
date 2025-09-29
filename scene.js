@@ -540,6 +540,9 @@ var createScene =  function () {
             if (i < 80) {
                 hand.rotation.z -= passoRotacao;
             }
+            if (i < 80) {
+                Claw.rotation.z -= passoRotacao;
+            }
 
 
             if (i > 80 && i < 160) {
@@ -557,6 +560,9 @@ var createScene =  function () {
             if (i > 80 && i < 160) {
                 hand.rotation.z += passoRotacao;
             }
+            if (i > 80 && i < 160) {
+                Claw.rotation.z += passoRotacao;
+            }
             if (i > 180) {
                 i = 0;
             }
@@ -565,9 +571,9 @@ var createScene =  function () {
             // Intervalo em milissegundos entre os movimentos
             setTimeout(performRoutine, 50); 
             const newLabel = chart1.data.labels.length;
-            addData(chart1, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),0);
-            addData(chart2, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),0);
-            addData(chart3, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),0);
+            addData(chart1, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(Claw.rotation.z));  
+            addData(chart2, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(Claw.rotation.z));
+            addData(chart3, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(Claw.rotation.z));
 
         }
     }

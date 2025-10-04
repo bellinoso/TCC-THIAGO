@@ -296,6 +296,7 @@ var createScene =  function () {
             servo03Axis = showAxis(scene,servo03);
             servo04Axis = showAxis(scene,servo04);
             servo05Axis = showAxis(scene,servo05);
+            ClawAxis = showAxis(scene,Claw);
         }
         if (!axesVisible) {
             if (servoWaistAxis) { servoWaistAxis.dispose(); servoWaistAxis = null; }
@@ -304,6 +305,7 @@ var createScene =  function () {
             if (servo03Axis) { servo03Axis.dispose(); servo03Axis = null; }
             if (servo04Axis) { servo04Axis.dispose(); servo04Axis = null; }
             if (servo05Axis) { servo05Axis.dispose(); servo05Axis = null; }
+            if (ClawAxis) { ClawAxis.dispose(); ClawAxis = null; }
         }
     });
     UiPanelLeft.addControl(toggleAxisButton);

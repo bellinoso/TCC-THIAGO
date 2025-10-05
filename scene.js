@@ -215,14 +215,7 @@ var createScene =  function () {
     UiPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
     advancedTexture.addControl(UiPanel);
     
-    // Painel para os sliders (lado direito)
-    var UiPanelRight = new BABYLON.GUI.StackPanel();
-    UiPanelRight.width = "220px";
-    UiPanelRight.fontSize = "14px";
-    UiPanelRight.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
-    UiPanelRight.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-    advancedTexture.addControl(UiPanelRight);
-
+    
     // Painel para os botões (lado esquerdo)
     var UiPanelLeft = new BABYLON.GUI.StackPanel();
     UiPanelLeft.width = "220px";
@@ -250,7 +243,7 @@ var createScene =  function () {
         }
     });
     UiPanelLeft.addControl(startStopButton);
-
+    
     var isVisibilityVisible = false; // State to track visibility, initially minimized
     
     // Toggle button for UiPanelLeft
@@ -273,7 +266,7 @@ var createScene =  function () {
     });
     UiPanelLeft.addControl(toggleUiPanelLeftButton);
 
-
+    
     // Inicialmente, definir visibilidade dos eixos como falsa
     var toggleAxisButton = GUI.Button.CreateSimpleButton("toggleAxisButton", "Toggle Axes");
     var axesVisible = false;
@@ -336,7 +329,7 @@ var createScene =  function () {
         toggleTransparency(importedMeshes,transparent);
     });
     UiPanelLeft.addControl(toggleTransparencyButton);
-
+    
     
     // Add child buttons to UiPanelLeft
     UiPanelLeft.addControl(startStopButton);
@@ -352,6 +345,38 @@ var createScene =  function () {
         }
     });
 
+    // Painel para os sliders (lado direito)
+    var UiPanelRight = new BABYLON.GUI.StackPanel();
+    UiPanelRight.width = "220px";
+    UiPanelRight.fontSize = "14px";
+    UiPanelRight.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    UiPanelRight.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    advancedTexture.addControl(UiPanelRight);
+
+    var servoSlidersContainer = new BABYLON.GUI.StackPanel();
+    servoSlidersContainer.width = "220px";
+    servoSlidersContainer.isVisible = true; // Começa visível
+
+    var ikControlsContainer = new BABYLON.GUI.StackPanel();
+    ikControlsContainer.width = "220px";
+    ikControlsContainer.isVisible = false; // Começa oculto
+    
+    // Botão para alternar entre os menus
+    var toggleMenuButton = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "Alternar Menu");
+    toggleMenuButton.width = "150px";
+    toggleMenuButton.height = "40px";
+    toggleMenuButton.color = "white";
+    toggleMenuButton.background = "purple";
+    toggleMenuButton.onPointerUpObservable.add(function () {
+        servoSlidersContainer.isVisible = !servoSlidersContainer.isVisible;
+        ikControlsContainer.isVisible = !ikControlsContainer.isVisible;
+        toggleMenuButton.textBlock.text = servoSlidersContainer.isVisible ? "Ir para Cinemática Reversa" : "Ir para Servos";
+    });
+    UiPanelRight.addControl(toggleMenuButton);
+    
+        UiPanelRight.addControl(servoSlidersContainer);
+        UiPanelRight.addControl(ikControlsContainer);
+    
     function updateSliders() {
         sliderWaistContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(waist.rotation.z));
         sliderArm1Container.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(arm1.rotation.z));
@@ -359,6 +384,9 @@ var createScene =  function () {
         sliderWristContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(wrist.rotation.z));
         sliderHandContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(hand.rotation.z);
         sliderClawContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(Claw.rotation.z));
+        sliderIKXContainer.children[1].children[0].value = actuator.getAbsolutePosition().x;
+        sliderIKYContainer.children[1].children[0].value = actuator.getAbsolutePosition().y;
+        sliderIKZContainer.children[1].children[0].value = actuator.getAbsolutePosition().z;
     }
     // Adicionando a função de atualização ao observador onBeforeRenderObservable
     scene.onBeforeRenderObservable.add(function () {
@@ -370,43 +398,57 @@ var createScene =  function () {
     var sliderWaistContainer = createSliderWithText(0, 360, waistIni, function (value) {
         waist.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo1");
-    UiPanelRight.addControl(sliderWaistContainer);
+    servoSlidersContainer.addControl(sliderWaistContainer);
     
     // Adicionando slider para arm1.rotation.z
     var sliderArm1Container = createSliderWithText(0, 180, arm1Ini, function (value) {
         arm1.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo2");
-    UiPanelRight.addControl(sliderArm1Container);
+    servoSlidersContainer.addControl(sliderArm1Container);
     
     // Adicionando slider para arm2.rotation.z
     var sliderArm2Container = createSliderWithText(-240, 61, arm2Ini, function (value) {
         // arm2.rotation.z = value * (Math.PI / 50) - Math.PI;
         arm2.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo3");
-    UiPanelRight.addControl(sliderArm2Container);
+    servoSlidersContainer.addControl(sliderArm2Container);
     
     // Adicionando slider para wrist.rotation.z
     var sliderWristContainer = createSliderWithText(0, 360, wristIni, function (value) {
         wrist.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo4");
-    UiPanelRight.addControl(sliderWristContainer);
+    servoSlidersContainer.addControl(sliderWristContainer);
     
     // Adicionando slider para hand.rotation.z
     var sliderHandContainer = createSliderWithText(-90, 90, handIni, function (value) {
         hand.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo5");
-    UiPanelRight.addControl(sliderHandContainer);
+    servoSlidersContainer.addControl(sliderHandContainer);
     
     var sliderClawContainer = createSliderWithText(0, 360, clawIni, function (value) {
         Claw.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo6");
-    UiPanelRight.addControl(sliderClawContainer);
+    servoSlidersContainer.addControl(sliderClawContainer);
     
-    
+    var sliderIKXContainer = createSliderWithText(-1500, 1500, actuator.getAbsolutePosition().x, function (value) {
+        // FUNCAO DE CINEMATICA REVERSA AQUI;
+    }, "Posição X");
+    ikControlsContainer.addControl(sliderIKXContainer);
+
+    var sliderIKYContainer = createSliderWithText(-1500, 1500, actuator.getAbsolutePosition().y, function (value) {
+        // FUNCAO DE CINEMATICA REVERSA AQUI;
+    }, "Posição Y");
+    ikControlsContainer.addControl(sliderIKYContainer);
+
+    var sliderIKZContainer = createSliderWithText(0, 2000, actuator.getAbsolutePosition().z, function (value) {
+        // FUNCAO DE CINEMATICA REVERSA AQUI;
+    }, "Posição Z");
+    ikControlsContainer.addControl(sliderIKZContainer);
+
     // Controle manual pelo teclado
     var rotationSpeed = 0.03;
     window.addEventListener("keydown", function (event) {
-        switch (event.key) {
+        switch (event.key.toLowerCase()) {
             case "q":
                 waist.rotation.z -= rotationSpeed; 
                 break;
@@ -571,6 +613,7 @@ var createScene =  function () {
 ///////////////////////////////////////////////////////////////////////////////////////////
     return scene;
 };
+
 window.initFunction = async function () {
 
     var asyncEngineCreation = async function () {

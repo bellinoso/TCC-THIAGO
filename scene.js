@@ -15,7 +15,7 @@ var createScene =  function () {
     
     
     scene.clearColor = new BABYLON.Color4(0.2, 0.3, 0.5, 1); // RGBA values: Red, Green, Blue, Alpha
-    var camera = new BABYLON.ArcRotateCamera("Camera", BABYLON.Tools.ToRadians(45), BABYLON.Tools.ToRadians(60), 500, new BABYLON.Vector3(0, 450, 0), scene);
+    var camera = new BABYLON.ArcRotateCamera("Camera", BABYLON.Tools.ToRadians(45), BABYLON.Tools.ToRadians(60), 500, new BABYLON.Vector3(0, 0, 450), scene);
     
     camera.lowerBetaLimit = 0.1; // Limite inferior de inclinação
     camera.upperBetaLimit = (Math.PI / 2) * 0.99; // Limite superior de inclinação
@@ -30,9 +30,9 @@ var createScene =  function () {
     camera.keysDown = [];
     camera.keysLeft = [];
     camera.keysRight = [];
-    
+    camera.upVector = new BABYLON.Vector3(0, 0, 1);  // Definindo Z como cima
     // Cria iluminação
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 0, 1), scene);
     
     // Reduzindo levemente a iluminação
     light.intensity = 0.7 ;
@@ -126,15 +126,13 @@ var createScene =  function () {
     // (fazendo eventuais ajustes de rotacao para alinhar o eixo do CAD)
 
     var base = BABYLON.MeshBuilder.CreateBox("base", { width: 0.1, height: 0.1, depth: 0.1 }, scene);
-    base.rotation.x = BABYLON.Tools.ToRadians(-90);
-
     var servoWaist = BABYLON.MeshBuilder.CreateBox("servoWaist", { width: 0.1, height: 0.1, depth: 0.1 }, scene);
     servoWaist.position.z = 200;
     servoWaist.parent = base;
     
     var waist = BABYLON.MeshBuilder.CreateBox("waist", { width: 1, height: 1, depth: 1 }, scene);
     waist.parent = servoWaist;
-    
+
     var servo01 = BABYLON.MeshBuilder.CreateBox("servo01", { width: 1, height: 1, depth: 1 }, scene);
     servo01.position.x = 100;
     servo01.position.z = 130;
@@ -175,6 +173,9 @@ var createScene =  function () {
     var Claw = BABYLON.MeshBuilder.CreateBox("Claw", { width: 1, height: 1, depth: 1 }, scene);
     Claw.parent = servo05;
 
+    var actuator = BABYLON.MeshBuilder.CreateBox("actuator", { width: 1, height: 1, depth: 1 }, scene);
+    actuator.position.z = 200
+    actuator.parent = Claw; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 /////// Posicionamento inicial
@@ -290,22 +291,22 @@ var createScene =  function () {
     toggleAxisButton.onPointerUpObservable.add(function() {
         axesVisible = !axesVisible;
         if (axesVisible) {
-            servoWaistAxis = showAxis(scene,servoWaist);
+            baseAxis = showAxis(scene,base);
             servo01Axis = showAxis(scene,servo01);
             servo02Axis = showAxis(scene,servo02);
             servo03Axis = showAxis(scene,servo03);
             servo04Axis = showAxis(scene,servo04);
             servo05Axis = showAxis(scene,servo05);
-            ClawAxis = showAxis(scene,Claw);
+            actuatorAxis = showAxis(scene,actuator);
         }
         if (!axesVisible) {
-            if (servoWaistAxis) { servoWaistAxis.dispose(); servoWaistAxis = null; }
+            if (baseAxis) { baseAxis.dispose(); baseAxis = null; }
             if (servo01Axis) { servo01Axis.dispose(); servo01Axis = null; }
             if (servo02Axis) { servo02Axis.dispose(); servo02Axis = null; }
             if (servo03Axis) { servo03Axis.dispose(); servo03Axis = null; }
             if (servo04Axis) { servo04Axis.dispose(); servo04Axis = null; }
             if (servo05Axis) { servo05Axis.dispose(); servo05Axis = null; }
-            if (ClawAxis) { ClawAxis.dispose(); ClawAxis = null; }
+            if (actuatorAxis) { actuatorAxis.dispose(); actuatorAxis = null; }
         }
     });
     UiPanelLeft.addControl(toggleAxisButton);
@@ -351,7 +352,6 @@ var createScene =  function () {
         }
     });
 
-
     function updateSliders() {
         sliderWaistContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(waist.rotation.z));
         sliderArm1Container.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(arm1.rotation.z));
@@ -363,6 +363,7 @@ var createScene =  function () {
     // Adicionando a função de atualização ao observador onBeforeRenderObservable
     scene.onBeforeRenderObservable.add(function () {
         updateSliders();
+        printMatrixToDataTab(actuator)
     });
     
     // Adicionando slider para waist.rotation.z

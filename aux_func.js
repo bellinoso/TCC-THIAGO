@@ -145,3 +145,32 @@ function normalizeAngle(angle) {
     }
     return normalizedAngle;
   }
+
+
+
+
+function printMatrixToDataTab(mesh) {
+    const matrix = mesh.getWorldMatrix().toArray();
+    // Transpor a matriz 4x4
+    let transposed = [];
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            transposed[i * 4 + j] = matrix[j * 4 + i];
+        }
+    }
+    let html = '<table border="1" style="border-collapse:collapse;text-align:center;">';
+    for (let i = 0; i < 4; i++) {
+        html += '<tr>';
+        for (let j = 0; j < 4; j++) {
+            html += `<td>${transposed[i * 4 + j].toFixed(2)}</td>`;
+        }
+        html += '</tr>';
+    }
+    html += '</table>';
+    document.querySelector('#tab-data').innerHTML = `
+        <div style="padding:20px;">
+            <b>Matriz de transformação global:</b><br><br>
+            ${html}
+        </div>
+    `;
+}

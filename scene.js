@@ -5,6 +5,17 @@ var scene = null;
 var sceneToRender = null;
 var createDefaultEngine = function () { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, disableWebGL2Support: false }); };
 
+const DH = [
+  // [alpha(deg), a, d, theta(deg)]
+  [90, 100, 330, 0],
+  [0,  400,   0, 0],
+  [-90,  0,   0, 0],
+  [90,   0, 375, 0],
+  [-90,  0,   0, 0],
+  [0,    0, 200, 0]
+];
+
+
 var createScene =  function () {
     var scene = new BABYLON.Scene(engine);
 
@@ -137,7 +148,6 @@ var createScene =  function () {
     servo01.position.x = 100;
     servo01.position.z = 130;
     servo01.rotation.x = BABYLON.Tools.ToRadians(90);
-    // servo01.rotation.y = BABYLON.Tools.ToRadians(-90);
     servo01.parent = waist;
     
     var arm1 = BABYLON.MeshBuilder.CreateBox("arm1", { width: 1, height: 1, depth: 1 }, scene);
@@ -180,6 +190,10 @@ var createScene =  function () {
 ///////////////////////////////////////////////////////////////////////////////////////////
 /////// Posicionamento inicial
 ///////////////////////////////////////////////////////////////////////////////////////////
+    // Inicia a engine
+    engine.runRenderLoop(function () {
+        scene.render();
+    });
 
     var waistIni = BABYLON.Tools.ToRadians(180);
     var arm1Ini = BABYLON.Tools.ToRadians(90);
@@ -195,10 +209,12 @@ var createScene =  function () {
     hand.rotation.z = handIni;
     Claw.rotation.z = clawIni;
 
-    // Inicia a engine
-    engine.runRenderLoop(function () {
-        scene.render();
-    });
+    var actuatorIniX = actuator.getAbsolutePosition().x;
+    var actuatorIniY = actuator.getAbsolutePosition().y;
+    var actuatorIniZ = actuator.getAbsolutePosition().z;
+
+    console.log("Posição inicial do atuador: ", actuatorIniX, actuatorIniY, actuatorIniZ);
+
     
 ///////////////////////////////////////////////////////////////////////////////////////////
 /////// GUI
@@ -430,17 +446,29 @@ var createScene =  function () {
     }, "Servo6");
     servoSlidersContainer.addControl(sliderClawContainer);
     
-    var sliderIKXContainer = createSliderWithText(-1500, 1500, actuator.getAbsolutePosition().x, function (value) {
-        // FUNCAO DE CINEMATICA REVERSA AQUI;
+    var sliderIKXContainer = createSliderWithText(-1500, 1500, actuatorIniX, function (value) {
+        // Chama a função de cinemática inversa e atualiza as juntas
+        const T06 = T_fromMesh(actuator,(value,0,0));
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);
+        // if (Array.isArray(angles) && angles.length === 6) {
+        //     waist.rotation.z = angles[0];
+        //     arm1.rotation.z = angles[1];
+        //     arm2.rotation.z = angles[2];
+        //     wrist.rotation.z = angles[3];
+        //     hand.rotation.z = angles[4];
+        //     Claw.rotation.z = angles[5];
+        // }
+        console.log([BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(Claw.rotation.z)]);
+        console.log(angles)
     }, "Posição X");
     ikControlsContainer.addControl(sliderIKXContainer);
 
-    var sliderIKYContainer = createSliderWithText(-1500, 1500, actuator.getAbsolutePosition().y, function (value) {
-        // FUNCAO DE CINEMATICA REVERSA AQUI;
+    var sliderIKYContainer = createSliderWithText(-1500, 1500, actuatorIniY, function (value) {
+        // Chama a função de cinemática inversa e atualiza as juntas
     }, "Posição Y");
     ikControlsContainer.addControl(sliderIKYContainer);
 
-    var sliderIKZContainer = createSliderWithText(0, 2000, actuator.getAbsolutePosition().z, function (value) {
+    var sliderIKZContainer = createSliderWithText(0, 2000,actuatorIniZ, function (value) {
         // FUNCAO DE CINEMATICA REVERSA AQUI;
     }, "Posição Z");
     ikControlsContainer.addControl(sliderIKZContainer);
@@ -509,7 +537,7 @@ var createScene =  function () {
             case "v": 
                 Claw.rotation.z += rotationSpeed; 
                 break;
-        }
+            }
     });
 
     

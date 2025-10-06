@@ -67,42 +67,6 @@ var startRenderLoop = function (engine, canvas) {
 
 function showAxis(scene, parent) {
 
-    // size = 200
-
-    // var makeCylinder = function(name, color, rotation, position) {
-    //     var cylinder = BABYLON.MeshBuilder.CreateCylinder(name, {
-    //         height: size,
-    //         diameter: size * 0.04
-    //     }, scene);
-    //     var material = new BABYLON.StandardMaterial(name + "Mat", scene);
-    //     material.diffuseColor = color;
-    //     cylinder.material = material;
-    //     cylinder.rotation = rotation;
-    //     cylinder.position = position;
-    //     cylinder.parent = parent;
-
-    //     cylinder.isVisible = false; // Definir o cilindro como invisível
-    //     return cylinder;
-    // };
-
-    // // Eixo X
-    // var axisX = makeCylinder("axisX", new BABYLON.Color3(1, 0, 0), 
-    //     new BABYLON.Vector3(0, 0, Math.PI / 2), 
-    //     new BABYLON.Vector3(size / 2, 0, 0));
-
-    // // Eixo Y
-    // var axisY = makeCylinder("axisY", new BABYLON.Color3(0, 1, 0), 
-    //     new BABYLON.Vector3(0, 0, 0), 
-    //     new BABYLON.Vector3(0, size / 2, 0));
-
-    // // Eixo Z
-    // var axisZ = makeCylinder("axisZ", new BABYLON.Color3(0, 0, 1), 
-    //     new BABYLON.Vector3(Math.PI / 2, 0, 0), 
-    //     new BABYLON.Vector3(0, 0, size / 2));
-
-    // // Retornar os eixos para controle de visibilidade
-    // return [axisX, axisY, axisZ];
-
     var axesViewer = new BABYLON.Debug.AxesViewer(scene, 100);
     if (parent) {
         axesViewer.xAxis.parent = parent;
@@ -112,12 +76,6 @@ function showAxis(scene, parent) {
     return axesViewer;
 
 }
-
-// function toggleAxisVisibility(axes, visible) {
-//     axes.forEach(function(axis) {
-//         axis.dispose()
-//     });
-// }
 
 function toggleTransparency(importedMeshes,transparent) {
     importedMeshes.forEach(function(mesh) {
@@ -145,8 +103,6 @@ function normalizeAngle(angle) {
     }
     return normalizedAngle;
   }
-
-
 
 
 function printMatrixToDataTab(mesh) {

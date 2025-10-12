@@ -126,15 +126,6 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Claw.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = Claw;
-        importedMesh.position.z = 75
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-        importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
-    });
 
     // Tratamento de redimensionamento da janela
     window.addEventListener("resize", function () {

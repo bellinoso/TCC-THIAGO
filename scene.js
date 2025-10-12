@@ -126,6 +126,15 @@ var createScene =  function () {
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
         importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
     });
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Claw.stl", scene, function (newMeshes) {
+        var importedMesh = newMeshes[0];
+        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+        importedMesh.parent = Claw;
+        importedMesh.position.z = 75
+        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+        importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+        importedMeshes.push(importedMesh); // Adicionar à lista de modelos importados
+    });
 
     // Tratamento de redimensionamento da janela
     window.addEventListener("resize", function () {
@@ -377,6 +386,17 @@ var createScene =  function () {
     ikControlsContainer.width = "220px";
     ikControlsContainer.isVisible = false; // Começa oculto
     
+    // Botão TESTE
+    var toggleteste = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "TESTE");
+    toggleteste.width = "150px";
+    toggleteste.height = "40px";
+    toggleteste.color = "white";
+    toggleteste.background = "purple";
+    toggleteste.onPointerUpObservable.add(function () {
+        updateSliders();
+    });
+    UiPanelRight.addControl(toggleteste);
+
     // Botão para alternar entre os menus
     var toggleMenuButton = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "Alternar Menu");
     toggleMenuButton.width = "150px";
@@ -387,157 +407,271 @@ var createScene =  function () {
         servoSlidersContainer.isVisible = !servoSlidersContainer.isVisible;
         ikControlsContainer.isVisible = !ikControlsContainer.isVisible;
         toggleMenuButton.textBlock.text = servoSlidersContainer.isVisible ? "Ir para Cinemática Reversa" : "Ir para Servos";
+        updateSliders();
     });
     UiPanelRight.addControl(toggleMenuButton);
     
         UiPanelRight.addControl(servoSlidersContainer);
         UiPanelRight.addControl(ikControlsContainer);
     
+    var isUpdating = false; 
     function updateSliders() {
-        sliderWaistContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(waist.rotation.z));
-        sliderArm1Container.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(arm1.rotation.z));
-        sliderArm2Container.children[1].children[0].value = BABYLON.Tools.ToDegrees(arm2.rotation.z);
-        sliderWristContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(wrist.rotation.z));
-        sliderHandContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(hand.rotation.z);
-        sliderClawContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(Claw.rotation.z));
-        sliderIKXContainer.children[1].children[0].value = actuator.getAbsolutePosition().x;
-        sliderIKYContainer.children[1].children[0].value = actuator.getAbsolutePosition().y;
-        sliderIKZContainer.children[1].children[0].value = actuator.getAbsolutePosition().z;
+        if (servoSlidersContainer.isVisible) {
+            isUpdating = true;
+            sliderWaistContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(waist.rotation.z));
+            sliderArm1Container.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(arm1.rotation.z));
+            sliderArm2Container.children[1].children[0].value = BABYLON.Tools.ToDegrees(arm2.rotation.z);
+            sliderWristContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(wrist.rotation.z));
+            sliderHandContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(hand.rotation.z);
+            sliderClawContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(Claw.rotation.z));
+            isUpdating = false;
+        }
+        if (ikControlsContainer.isVisible) {
+            isUpdating = true;
+            sliderIKXContainer.children[1].children[0].value = actuator.getAbsolutePosition().x;
+            sliderIKYContainer.children[1].children[0].value = actuator.getAbsolutePosition().y;
+            sliderIKZContainer.children[1].children[0].value = actuator.getAbsolutePosition().z;
+            sliderIKRollContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(getRoll(actuator));
+            sliderIKPitchContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(getPitch(actuator));
+            sliderIKYawContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(getYaw(actuator));
+            isUpdating = false;
+        }
     }
     // Adicionando a função de atualização ao observador onBeforeRenderObservable
     scene.onBeforeRenderObservable.add(function () {
-        updateSliders();
+        // updateSliders();
         printMatrixToDataTab(actuator)
     });
     
     // Adicionando slider para waist.rotation.z
     var sliderWaistContainer = createSliderWithText(0, 360, waistIni, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         waist.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo1");
     servoSlidersContainer.addControl(sliderWaistContainer);
     
     // Adicionando slider para arm1.rotation.z
     var sliderArm1Container = createSliderWithText(0, 180, arm1Ini, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         arm1.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo2");
     servoSlidersContainer.addControl(sliderArm1Container);
     
     // Adicionando slider para arm2.rotation.z
     var sliderArm2Container = createSliderWithText(-240, 61, arm2Ini, function (value) {
-        // arm2.rotation.z = value * (Math.PI / 50) - Math.PI;
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         arm2.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo3");
     servoSlidersContainer.addControl(sliderArm2Container);
     
     // Adicionando slider para wrist.rotation.z
     var sliderWristContainer = createSliderWithText(0, 360, wristIni, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         wrist.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo4");
     servoSlidersContainer.addControl(sliderWristContainer);
     
     // Adicionando slider para hand.rotation.z
     var sliderHandContainer = createSliderWithText(-90, 90, handIni, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         hand.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo5");
     servoSlidersContainer.addControl(sliderHandContainer);
     
     var sliderClawContainer = createSliderWithText(0, 360, clawIni, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         Claw.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo6");
     servoSlidersContainer.addControl(sliderClawContainer);
     
     var sliderIKXContainer = createSliderWithText(-1500, 1500, actuatorIniX, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         // Chama a função de cinemática inversa e atualiza as juntas
-        const T06 = T_fromMesh(actuator,(value,0,0));
+        const T06 = T_fromMesh(actuator);
+        T06[0][3] = value;
         var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);
-        // if (Array.isArray(angles) && angles.length === 6) {
-        //     waist.rotation.z = angles[0];
-        //     arm1.rotation.z = angles[1];
-        //     arm2.rotation.z = angles[2];
-        //     wrist.rotation.z = angles[3];
-        //     hand.rotation.z = angles[4];
-        //     Claw.rotation.z = angles[5];
-        // }
-        console.log([BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(Claw.rotation.z)]);
-        console.log(angles)
+        if (Array.isArray(angles) && angles.length === 6) {
+            waist.rotation.z = angles[0];
+            arm1.rotation.z = angles[1];
+            arm2.rotation.z = angles[2];
+            wrist.rotation.z = angles[3];
+            hand.rotation.z = angles[4];
+            Claw.rotation.z = angles[5];
+        }
     }, "Posição X");
     ikControlsContainer.addControl(sliderIKXContainer);
 
     var sliderIKYContainer = createSliderWithText(-1500, 1500, actuatorIniY, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         // Chama a função de cinemática inversa e atualiza as juntas
+        const T06 = T_fromMesh(actuator);
+        T06[1][3] = value;
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);
+        if (Array.isArray(angles) && angles.length === 6) {
+            waist.rotation.z = angles[0];
+            arm1.rotation.z = angles[1];
+            arm2.rotation.z = angles[2];
+            wrist.rotation.z = angles[3];
+            hand.rotation.z = angles[4];
+            Claw.rotation.z = angles[5];
+        }
     }, "Posição Y");
     ikControlsContainer.addControl(sliderIKYContainer);
 
     var sliderIKZContainer = createSliderWithText(0, 2000,actuatorIniZ, function (value) {
-        // FUNCAO DE CINEMATICA REVERSA AQUI;
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
+        // Chama a função de cinemática inversa e atualiza as juntas
+        const T06 = T_fromMesh(actuator);
+        T06[2][3] = value;
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);
+        if (Array.isArray(angles) && angles.length === 6) {
+            waist.rotation.z = angles[0];
+            arm1.rotation.z = angles[1];
+            arm2.rotation.z = angles[2];
+            wrist.rotation.z = angles[3];
+            hand.rotation.z = angles[4];
+            Claw.rotation.z = angles[5];
+        }
     }, "Posição Z");
     ikControlsContainer.addControl(sliderIKZContainer);
 
+    var sliderIKRollContainer = createSliderWithText(-180, 180, 0, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
+        // Chama a função de cinemática inversa e atualiza as juntas
+        var T06 = T_fromMesh(actuator);
+        T06 = setRoll(T06, BABYLON.Tools.ToRadians(value));
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);   
+        if (Array.isArray(angles) && angles.length === 6) {
+            waist.rotation.z = angles[0];
+            arm1.rotation.z = angles[1];
+            arm2.rotation.z = angles[2];
+            wrist.rotation.z = angles[3];
+            hand.rotation.z = angles[4];
+            Claw.rotation.z = angles[5];
+        }
+    }, "Roll");
+    ikControlsContainer.addControl(sliderIKRollContainer);  
+
+    var sliderIKPitchContainer = createSliderWithText(-180, 180, 0, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
+        // Chama a função de cinemática inversa e atualiza as juntas
+        var T06 = T_fromMesh(actuator);
+        T06 = setPitch(T06, BABYLON.Tools.ToRadians(value));
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);   
+        if (Array.isArray(angles) && angles.length === 6) {
+            waist.rotation.z = angles[0];
+            arm1.rotation.z = angles[1];
+            arm2.rotation.z = angles[2];
+            wrist.rotation.z = angles[3];
+            hand.rotation.z = angles[4];
+            Claw.rotation.z = angles[5];
+        }
+    }, "Pitch");
+    ikControlsContainer.addControl(sliderIKPitchContainer);     
+
+    var sliderIKYawContainer = createSliderWithText(-180, 180, 0, function (value) {
+        if (isUpdating) return; // Ignorar se estiver atualizando os sliders
+        // Chama a função de cinemática inversa e atualiza as juntas
+        var T06 = T_fromMesh(actuator);
+        T06 = setYaw(T06, BABYLON.Tools.ToRadians(value));
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);   
+        if (Array.isArray(angles) && angles.length === 6) {
+            waist.rotation.z = angles[0];
+            arm1.rotation.z = angles[1];
+            arm2.rotation.z = angles[2];
+            wrist.rotation.z = angles[3];
+            hand.rotation.z = angles[4];
+            Claw.rotation.z = angles[5];
+        }
+    }, "Yaw");
+    ikControlsContainer.addControl(sliderIKYawContainer);   
+
     // Controle manual pelo teclado
     var rotationSpeed = 0.03;
+    var linearSpeed = 10;
     window.addEventListener("keydown", function (event) {
-        switch (event.key.toLowerCase()) {
-            case "q":
-                waist.rotation.z -= rotationSpeed; 
-                break;
-                case "w": 
-                waist.rotation.z += rotationSpeed; 
-                break;
-            case "e":
-                if (BABYLON.Tools.ToDegrees(arm1.rotation.z - rotationSpeed) <= 0) {
-                    arm1.rotation.z = BABYLON.Tools.ToRadians(0);
-                } else {
-                    arm1.rotation.z -= rotationSpeed;
+        if (servoSlidersContainer.isVisible) {
+            switch (event.key.toLowerCase()) {
+                case "q":
+                    waist.rotation.z -= rotationSpeed; 
+                    break;
+                    case "w": 
+                    waist.rotation.z += rotationSpeed; 
+                    break;
+                case "e":
+                    if (BABYLON.Tools.ToDegrees(arm1.rotation.z - rotationSpeed) <= 0) {
+                        arm1.rotation.z = BABYLON.Tools.ToRadians(0);
+                    } else {
+                        arm1.rotation.z -= rotationSpeed;
+                    }
+                    break;
+                case "r":
+                    if (BABYLON.Tools.ToDegrees(arm1.rotation.z + rotationSpeed) >= 180) {
+                        arm1.rotation.z = BABYLON.Tools.ToRadians(180);
+                    } else {
+                        arm1.rotation.z += rotationSpeed;
+                    }
+                    break;
+                case "a":
+                    if(BABYLON.Tools.ToDegrees(arm2.rotation.z - rotationSpeed) <= -240) {
+                        arm2.rotation.z = BABYLON.Tools.ToRadians(-240);
+                    } else {
+                        arm2.rotation.z -= rotationSpeed;
+                    }
+                    break;
+                case "s":
+                    if(BABYLON.Tools.ToDegrees(arm2.rotation.z + rotationSpeed) >= 61) {
+                        arm2.rotation.z = BABYLON.Tools.ToRadians(61);
+                    } else {
+                        arm2.rotation.z += rotationSpeed;
+                    }
+                    break;
+                case "d":
+                    wrist.rotation.z -= rotationSpeed;
+                    break;
+                case "f":
+                    wrist.rotation.z += rotationSpeed;
+                    break;
+                case "x":
+                    if (BABYLON.Tools.ToDegrees(hand.rotation.z - rotationSpeed) <= -90) {
+                        hand.rotation.z = BABYLON.Tools.ToRadians(-90);
+                    } else {
+                        hand.rotation.z -= rotationSpeed;
+                    }
+                    break;
+                case "z":
+                    if (BABYLON.Tools.ToDegrees(hand.rotation.z - rotationSpeed) >= 90) {
+                        hand.rotation.z = BABYLON.Tools.ToRadians(90);
+                    } else {
+                        hand.rotation.z += rotationSpeed;
+                    }
+                    break;
+                case "c":
+                    Claw.rotation.z -= rotationSpeed; 
+                    break;
+                case "v": 
+                    Claw.rotation.z += rotationSpeed; 
+                    break;
                 }
-                break;
-            case "r":
-                if (BABYLON.Tools.ToDegrees(arm1.rotation.z + rotationSpeed) >= 180) {
-                    arm1.rotation.z = BABYLON.Tools.ToRadians(180);
-                } else {
-                    arm1.rotation.z += rotationSpeed;
-                }
-                break;
-            case "a":
-                if(BABYLON.Tools.ToDegrees(arm2.rotation.z - rotationSpeed) <= -240) {
-                    arm2.rotation.z = BABYLON.Tools.ToRadians(-240);
-                } else {
-                    arm2.rotation.z -= rotationSpeed;
-                }
-                break;
-            case "s":
-                if(BABYLON.Tools.ToDegrees(arm2.rotation.z + rotationSpeed) >= 61) {
-                    arm2.rotation.z = BABYLON.Tools.ToRadians(61);
-                } else {
-                    arm2.rotation.z += rotationSpeed;
-                }
-                break;
-            case "d":
-                wrist.rotation.z -= rotationSpeed;
-                break;
-            case "f":
-                wrist.rotation.z += rotationSpeed;
-                break;
-            case "x":
-                if (BABYLON.Tools.ToDegrees(hand.rotation.z - rotationSpeed) <= -90) {
-                    hand.rotation.z = BABYLON.Tools.ToRadians(-90);
-                } else {
-                    hand.rotation.z -= rotationSpeed;
-                }
-                break;
-            case "z":
-                if (BABYLON.Tools.ToDegrees(hand.rotation.z - rotationSpeed) >= 90) {
-                    hand.rotation.z = BABYLON.Tools.ToRadians(90);
-                } else {
-                    hand.rotation.z += rotationSpeed;
-                }
-                break;
-            case "c":
-                Claw.rotation.z -= rotationSpeed; 
-                break;
-            case "v": 
-                Claw.rotation.z += rotationSpeed; 
-                break;
+            updateSliders();
+        }
+        if (ikControlsContainer.isVisible) {
+            switch (event.key.toLowerCase()) {
+                case "arrowup":
+                    // Aumentar o ângulo de yaw
+                    break;
+                case "arrowdown":
+                    // Diminuir o ângulo de yaw
+                    break;
+                case "arrowleft":
+                    // Aumentar o ângulo de pitch
+                    break;
+                case "arrowright":
+                    // Diminuir o ângulo de pitch
+                    break;
             }
+            updateSliders();
+        }
     });
 
     

@@ -140,12 +140,14 @@ if __name__ == "__main__":
     ]
 
     # input de ângulos (graus)
-    angulos = [52.56235088546498, 72.81126614607516, -153.04436279296874, 169.686759687645, -42.971834634811735, 327.3414056775425]
+    angulos = [89.60009765625, 151.2, -167.76, 260.8001953125, -57.19995117187499, 235.20000000000007]
 
     T06 = forward_kinematics(DH, angulos)
     print("\nMatriz de transformação global (T06):")
     np.set_printoptions(precision=2, suppress=True)
     print(T06)
+
+    T06[0,3]=340
 
     # IK completo [θ1..θ6]
     th_sol = inverse_kinematics(DH, T06, angulos)

@@ -21,7 +21,6 @@ var createScene =  function () {
 
     // O BABYLON.JS não usa a convenção de sistema de coordenadas Z-up do CAD
     // Necessario o comando abaixo para respeitar a regra da mao direita.
-    //(perdi um tempinho bom nisso aqui)
     scene.useRightHandedSystem = true
     
     
@@ -241,7 +240,7 @@ var createScene =  function () {
     advancedTexture.addControl(UiPanelLeft);
     
     // Botao de Start/Stop
-    var startStopButton = GUI.Button.CreateSimpleButton("startStopButton", "Start");
+    var startStopButton = GUI.Button.CreateSimpleButton("startStopButton", "Start Demo");
     startStopButton.paddingTop = "10px";
     startStopButton.width = "150px";
     startStopButton.height = "40px";
@@ -250,45 +249,22 @@ var createScene =  function () {
     startStopButton.onPointerUpObservable.add(function () {
         if (isRoutineRunning) {
             stopRoutine();
-            startStopButton.textBlock.text = "Start";
+            startStopButton.textBlock.text = "Start Demo";
             startStopButton.background = "green";
         } else {
             startRoutine();
-            startStopButton.textBlock.text = "Stop";
+            startStopButton.textBlock.text = "Stop Demo";
             startStopButton.background = "red";
         }
     });
     UiPanelLeft.addControl(startStopButton);
     
-    var isVisibilityVisible = false; // State to track visibility, initially minimized
-    
-    // Toggle button for UiPanelLeft
-    var toggleUiPanelLeftButton = GUI.Button.CreateSimpleButton("toggleUiPanelLeftButton", "▶ Visibility options");
-    toggleUiPanelLeftButton.paddingTop = "10px";
-    toggleUiPanelLeftButton.width = "150px";
-    toggleUiPanelLeftButton.height = "40px";
-    toggleUiPanelLeftButton.color = "white";
-    toggleUiPanelLeftButton.background = "gray";
-    toggleUiPanelLeftButton.onPointerUpObservable.add(function () {
-        isVisibilityVisible = !isVisibilityVisible;
-        UiPanelLeft.children.forEach(function (child) {
-            const visibleButtons = [toggleAxisButton, toggleModelsButton, toggleTransparencyButton];
-            if (visibleButtons.includes(child)) {
-                child.isVisible = isVisibilityVisible;
-                child.left = isVisibilityVisible ? "20px" : "0px"; // Indent child buttons when visible
-            }
-        });
-        toggleUiPanelLeftButton.textBlock.text = isVisibilityVisible ? "▼ Visibility options" : "▶ Visibility options";
-    });
-    UiPanelLeft.addControl(toggleUiPanelLeftButton);
-
     
     // Inicialmente, definir visibilidade dos eixos como falsa
     var toggleAxisButton = GUI.Button.CreateSimpleButton("toggleAxisButton", "Toggle Axes");
     var axesVisible = false;
-    var servoWaistAxis = null;
     var servo01Axis = null;
-    var servo02Axis = null;
+    var servo02Axis = null;  
     var servo03Axis = null;
     var servo04Axis = null;
     var servo05Axis = null;
@@ -319,48 +295,49 @@ var createScene =  function () {
         }
     });
     UiPanelLeft.addControl(toggleAxisButton);
-    
-    var modelsVisible = true;
-    var toggleModelsButton = GUI.Button.CreateSimpleButton("toggleModelsButton", "Toggle Models");
-    toggleModelsButton.paddingTop = "10px";
-    toggleModelsButton.width = "150px";
-    toggleModelsButton.height = "40px";
-    toggleModelsButton.color = "white";
-    toggleModelsButton.background = "blue";
-    toggleModelsButton.onPointerUpObservable.add(function() {
-        modelsVisible = !modelsVisible;
-        toggleModelsVisibility(importedMeshes,modelsVisible);
+
+    // Lista de pontos de posicionamento
+    var pontos = [];
+    // Função para adicionar um novo ponto à lista
+    function adicionarPonto() {
+        
+        const ponto = {
+            waist: BABYLON.Tools.ToDegrees(waist.rotation.z),
+            arm1: BABYLON.Tools.ToDegrees(arm1.rotation.z),
+            arm2: BABYLON.Tools.ToDegrees(arm2.rotation.z),
+            wrist: BABYLON.Tools.ToDegrees(wrist.rotation.z),
+            hand: BABYLON.Tools.ToDegrees(hand.rotation.z),
+            claw: BABYLON.Tools.ToDegrees(Claw.rotation.z),
+            x: actuator.getAbsolutePosition().x,
+            y: actuator.getAbsolutePosition().y,
+            z: actuator.getAbsolutePosition().z,
+            indicador : BABYLON.MeshBuilder.CreateSphere("pontoEsfera", { diameter: 15 }, scene)
+        };
+
+        ponto.indicador.position = new BABYLON.Vector3(ponto.x, ponto.y, ponto.z);
+        var mat = new BABYLON.StandardMaterial("matEsfera", scene);
+        mat.diffuseColor = new BABYLON.Color3(1, 0, 0); // vermelho
+        ponto.indicador.material = mat;
+        
+        pontos.push(ponto);
+
+    }
+
+    var addPointButton = GUI.Button.CreateSimpleButton("addPointButton", "Add Point");
+    addPointButton.paddingTop = "10px";
+    addPointButton.width = "150px";
+    addPointButton.height = "40px";
+    addPointButton.color = "white";
+    addPointButton.background = "blue";
+    addPointButton.onPointerUpObservable.add(function() {
+        adicionarPonto();
     });
-    UiPanelLeft.addControl(toggleModelsButton);
-    
-    var transparent = false;
-    var toggleTransparencyButton = GUI.Button.CreateSimpleButton("toggleTransparencyButton", "Toggle Transparency");
-    toggleTransparencyButton.paddingTop = "10px";
-    toggleTransparencyButton.width = "150px";
-    toggleTransparencyButton.height = "40px";
-    toggleTransparencyButton.color = "white";
-    toggleTransparencyButton.background = "blue";
-    toggleTransparencyButton.onPointerUpObservable.add(function() {
-        transparent = !transparent;
-        toggleTransparency(importedMeshes,transparent);
-    });
-    UiPanelLeft.addControl(toggleTransparencyButton);
-    
-    
-    // Add child buttons to UiPanelLeft
+    UiPanelLeft.addControl(addPointButton);
+
+    //Adiciona os botões ao UiPanelLeft
     UiPanelLeft.addControl(startStopButton);
     UiPanelLeft.addControl(toggleAxisButton);
-    UiPanelLeft.addControl(toggleModelsButton);
-    UiPanelLeft.addControl(toggleTransparencyButton);
     
-    // Initially hide child buttons
-    UiPanelLeft.children.forEach(function (child) {
-        const visibleButtons = [toggleAxisButton, toggleModelsButton, toggleTransparencyButton];
-        if (visibleButtons.includes(child)) {
-            child.isVisible = false;
-        }
-    });
-
     // Painel para os sliders (lado direito)
     var UiPanelRight = new BABYLON.GUI.StackPanel();
     UiPanelRight.width = "220px";
@@ -378,15 +355,15 @@ var createScene =  function () {
     ikControlsContainer.isVisible = false; // Começa oculto
     
     // Botão TESTE
-    var toggleteste = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "TESTE");
-    toggleteste.width = "150px";
-    toggleteste.height = "40px";
-    toggleteste.color = "white";
-    toggleteste.background = "purple";
-    toggleteste.onPointerUpObservable.add(function () {
-        updateSliders();
-    });
-    UiPanelRight.addControl(toggleteste);
+    // var toggleteste = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "TESTE");
+    // toggleteste.width = "150px";
+    // toggleteste.height = "40px";
+    // toggleteste.color = "white";
+    // toggleteste.background = "purple";
+    // toggleteste.onPointerUpObservable.add(function () {
+    //     updateSliders();
+    // });
+    // UiPanelRight.addControl(toggleteste);
 
     // Botão para alternar entre os menus
     var toggleMenuButton = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "Alternar Menu");
@@ -435,41 +412,41 @@ var createScene =  function () {
     });
     
     // Adicionando slider para waist.rotation.z
-    var sliderWaistContainer = createSliderWithText(0, 360, waistIni, function (value) {
+    var sliderWaistContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(waistIni), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         waist.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo1");
     servoSlidersContainer.addControl(sliderWaistContainer);
     
     // Adicionando slider para arm1.rotation.z
-    var sliderArm1Container = createSliderWithText(0, 180, arm1Ini, function (value) {
+    var sliderArm1Container = createSliderWithText(0, 180, BABYLON.Tools.ToDegrees(arm1Ini), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         arm1.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo2");
     servoSlidersContainer.addControl(sliderArm1Container);
     
     // Adicionando slider para arm2.rotation.z
-    var sliderArm2Container = createSliderWithText(-240, 61, arm2Ini, function (value) {
+    var sliderArm2Container = createSliderWithText(-240, 61, BABYLON.Tools.ToDegrees(arm2Ini), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         arm2.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo3");
     servoSlidersContainer.addControl(sliderArm2Container);
     
     // Adicionando slider para wrist.rotation.z
-    var sliderWristContainer = createSliderWithText(0, 360, wristIni, function (value) {
+    var sliderWristContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(wristIni), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         wrist.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo4");
     servoSlidersContainer.addControl(sliderWristContainer);
     
     // Adicionando slider para hand.rotation.z
-    var sliderHandContainer = createSliderWithText(-90, 90, handIni, function (value) {
+    var sliderHandContainer = createSliderWithText(-90, 90, BABYLON.Tools.ToDegrees(handIni), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         hand.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo5");
     servoSlidersContainer.addControl(sliderHandContainer);
     
-    var sliderClawContainer = createSliderWithText(0, 360, clawIni, function (value) {
+    var sliderClawContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(clawIni), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         Claw.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo6");
@@ -646,23 +623,23 @@ var createScene =  function () {
                 }
             updateSliders();
         }
-        if (ikControlsContainer.isVisible) {
-            switch (event.key.toLowerCase()) {
-                case "arrowup":
-                    // Aumentar o ângulo de yaw
-                    break;
-                case "arrowdown":
-                    // Diminuir o ângulo de yaw
-                    break;
-                case "arrowleft":
-                    // Aumentar o ângulo de pitch
-                    break;
-                case "arrowright":
-                    // Diminuir o ângulo de pitch
-                    break;
-            }
-            updateSliders();
-        }
+        // if (ikControlsContainer.isVisible) {
+        //     switch (event.key.toLowerCase()) {
+        //         case "arrowup":
+        //             // Aumentar o ângulo de yaw
+        //             break;
+        //         case "arrowdown":
+        //             // Diminuir o ângulo de yaw
+        //             break;
+        //         case "arrowleft":
+        //             // Aumentar o ângulo de pitch
+        //             break;
+        //         case "arrowright":
+        //             // Diminuir o ângulo de pitch
+        //             break;
+        //     }
+        //     updateSliders();
+        // }
     });
 
     
@@ -750,7 +727,8 @@ var createScene =  function () {
             if (i > 180) {
                 i = 0;
             }
-
+            updateSliders();
+            adicionarPonto();
             i++;
             // Intervalo em milissegundos entre os movimentos
             setTimeout(performRoutine, 50); 

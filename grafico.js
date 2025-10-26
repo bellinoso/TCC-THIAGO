@@ -150,17 +150,17 @@ const ctx3 = document.getElementById('gAce').getContext('2d');
 // Criação dos gráficos com títulos diferentes
 const chartConfig1 = JSON.parse(JSON.stringify(chartConfig));
 chartConfig1.options.plugins.title.text = 'Posição';
-chartConfig1.options.scales.y.title.text = 'p [ rad ]';
+chartConfig1.options.scales.y.title.text = 'p [ deg ]';
 const chart1 = new Chart(ctx1, chartConfig1);
 
 const chartConfig2 = JSON.parse(JSON.stringify(chartConfig));
 chartConfig2.options.plugins.title.text = 'Velocidade';
-chartConfig2.options.scales.y.title.text = 'v [ rad / s ]';
+chartConfig2.options.scales.y.title.text = 'v [ deg / s ]';
 const chart2 = new Chart(ctx2, chartConfig2);
 
 const chartConfig3 = JSON.parse(JSON.stringify(chartConfig));
 chartConfig3.options.plugins.title.text = 'Aceleração';
-chartConfig3.options.scales.y.title.text = 'a [ rad / s^2 ]';
+chartConfig3.options.scales.y.title.text = 'a [ deg / s^2 ]';
 const chart3 = new Chart(ctx3, chartConfig3);
 
 // Redimensionar os canvas ao carregar e quando a janela é redimensionada
@@ -183,6 +183,14 @@ function addData(chart, label, data1, data2, data3, data4, data5, data6) {
     chart.data.datasets[4].data.push(data5);
     chart.data.datasets[5].data.push(data6);
     chart.update('none');
+}
+
+function clearAllCharts() {
+    [chart1, chart2, chart3].forEach(chart => {
+        chart.data.labels = [];
+        chart.data.datasets.forEach(ds => ds.data = []);
+        chart.update();
+    });
 }
 
 // // Exemplo de como adicionar dados aos gráficos

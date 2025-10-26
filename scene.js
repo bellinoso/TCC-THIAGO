@@ -15,7 +15,6 @@ const DH = [
   [0,    0, 200, 0]
 ];
 
-
 var createScene =  function () {
     var scene = new BABYLON.Scene(engine);
 
@@ -119,7 +118,7 @@ var createScene =  function () {
     BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/bellinoso/TCC-THIAGO/main/Modelos/", "Claw.stl", scene, function (newMeshes) {
         var importedMesh = newMeshes[0];
         importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = Claw;
+        importedMesh.parent = claw;
         importedMesh.position.z = 75
         importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
         importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
@@ -179,12 +178,12 @@ var createScene =  function () {
     servo05.rotation.x = BABYLON.Tools.ToRadians(-90);
     servo05.parent = hand;
     
-    var Claw = BABYLON.MeshBuilder.CreateBox("Claw", { width: 1, height: 1, depth: 1 }, scene);
-    Claw.parent = servo05;
+    var claw = BABYLON.MeshBuilder.CreateBox("claw", { width: 1, height: 1, depth: 1 }, scene);
+    claw.parent = servo05;
 
     var actuator = BABYLON.MeshBuilder.CreateBox("actuator", { width: 1, height: 1, depth: 1 }, scene);
     actuator.position.z = 200
-    actuator.parent = Claw; 
+    actuator.parent = claw; 
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 /////// Posicionamento inicial
@@ -206,7 +205,7 @@ var createScene =  function () {
     arm2.rotation.z = arm2Ini;
     wrist.rotation.z = wristIni;
     hand.rotation.z = handIni;
-    Claw.rotation.z = clawIni;
+    claw.rotation.z = clawIni;
 
     var actuatorIniX = actuator.getAbsolutePosition().x;
     var actuatorIniY = actuator.getAbsolutePosition().y;
@@ -240,7 +239,27 @@ var createScene =  function () {
     advancedTexture.addControl(UiPanelLeft);
     
     // Botao de Start/Stop
-    var startStopButton = GUI.Button.CreateSimpleButton("startStopButton", "Start Demo");
+    var startDemoButton = GUI.Button.CreateSimpleButton("startDemoButton", "Start Demo");
+    startDemoButton.paddingTop = "10px";
+    startDemoButton.width = "150px";
+    startDemoButton.height = "40px";
+    startDemoButton.color = "white";
+    startDemoButton.background = "green";
+    startDemoButton.onPointerUpObservable.add(function () {
+        if (isDemoRunning) {
+            stopDemo();
+            startDemoButton.textBlock.text = "Start Demo";
+            startDemoButton.background = "green";
+        } else {
+            startDemo();
+            startDemoButton.textBlock.text = "Stop Demo";
+            startDemoButton.background = "red";
+        }
+    });
+    UiPanelLeft.addControl(startDemoButton);
+
+    // Botao de Start/Stop
+    var startStopButton = GUI.Button.CreateSimpleButton("startStopButton", "Start Program");
     startStopButton.paddingTop = "10px";
     startStopButton.width = "150px";
     startStopButton.height = "40px";
@@ -249,17 +268,17 @@ var createScene =  function () {
     startStopButton.onPointerUpObservable.add(function () {
         if (isRoutineRunning) {
             stopRoutine();
-            startStopButton.textBlock.text = "Start Demo";
+            startStopButton.textBlock.text = "Start Program";
             startStopButton.background = "green";
         } else {
             startRoutine();
-            startStopButton.textBlock.text = "Stop Demo";
+            startStopButton.textBlock.text = "Stop Program  ";
             startStopButton.background = "red";
         }
     });
     UiPanelLeft.addControl(startStopButton);
     
-    
+
     // Inicialmente, definir visibilidade dos eixos como falsa
     var toggleAxisButton = GUI.Button.CreateSimpleButton("toggleAxisButton", "Toggle Axes");
     var axesVisible = false;
@@ -302,12 +321,12 @@ var createScene =  function () {
     function adicionarPonto() {
         
         const ponto = {
-            waist: BABYLON.Tools.ToDegrees(waist.rotation.z),
-            arm1: BABYLON.Tools.ToDegrees(arm1.rotation.z),
-            arm2: BABYLON.Tools.ToDegrees(arm2.rotation.z),
-            wrist: BABYLON.Tools.ToDegrees(wrist.rotation.z),
-            hand: BABYLON.Tools.ToDegrees(hand.rotation.z),
-            claw: BABYLON.Tools.ToDegrees(Claw.rotation.z),
+            waist: waist.rotation.z,
+            arm1: arm1.rotation.z,
+            arm2: arm2.rotation.z,
+            wrist: wrist.rotation.z,
+            hand: hand.rotation.z,
+            claw: claw.rotation.z,
             x: actuator.getAbsolutePosition().x,
             y: actuator.getAbsolutePosition().y,
             z: actuator.getAbsolutePosition().z,
@@ -335,7 +354,7 @@ var createScene =  function () {
     UiPanelLeft.addControl(addPointButton);
 
     //Adiciona os botões ao UiPanelLeft
-    UiPanelLeft.addControl(startStopButton);
+    UiPanelLeft.addControl(startDemoButton);
     UiPanelLeft.addControl(toggleAxisButton);
     
     // Painel para os sliders (lado direito)
@@ -354,17 +373,6 @@ var createScene =  function () {
     ikControlsContainer.width = "220px";
     ikControlsContainer.isVisible = false; // Começa oculto
     
-    // Botão TESTE
-    // var toggleteste = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "TESTE");
-    // toggleteste.width = "150px";
-    // toggleteste.height = "40px";
-    // toggleteste.color = "white";
-    // toggleteste.background = "purple";
-    // toggleteste.onPointerUpObservable.add(function () {
-    //     updateSliders();
-    // });
-    // UiPanelRight.addControl(toggleteste);
-
     // Botão para alternar entre os menus
     var toggleMenuButton = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "Alternar Menu");
     toggleMenuButton.width = "150px";
@@ -391,7 +399,7 @@ var createScene =  function () {
             sliderArm2Container.children[1].children[0].value = BABYLON.Tools.ToDegrees(arm2.rotation.z);
             sliderWristContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(wrist.rotation.z));
             sliderHandContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(hand.rotation.z);
-            sliderClawContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(Claw.rotation.z));
+            sliderClawContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(claw.rotation.z));
             isUpdating = false;
         }
         if (ikControlsContainer.isVisible) {
@@ -448,7 +456,7 @@ var createScene =  function () {
     
     var sliderClawContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(clawIni), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
-        Claw.rotation.z = BABYLON.Tools.ToRadians(value);
+        claw.rotation.z = BABYLON.Tools.ToRadians(value);
     }, "Servo6");
     servoSlidersContainer.addControl(sliderClawContainer);
     
@@ -457,14 +465,14 @@ var createScene =  function () {
         // Chama a função de cinemática inversa e atualiza as juntas
         const T06 = T_fromMesh(actuator);
         T06[0][3] = value;
-        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, claw.rotation.z]);
         if (Array.isArray(angles) && angles.length === 6) {
             waist.rotation.z = angles[0];
             arm1.rotation.z = angles[1];
             arm2.rotation.z = angles[2];
             wrist.rotation.z = angles[3];
             hand.rotation.z = angles[4];
-            Claw.rotation.z = angles[5];
+            claw.rotation.z = angles[5];
         }
     }, "Posição X");
     ikControlsContainer.addControl(sliderIKXContainer);
@@ -474,14 +482,14 @@ var createScene =  function () {
         // Chama a função de cinemática inversa e atualiza as juntas
         const T06 = T_fromMesh(actuator);
         T06[1][3] = value;
-        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, claw.rotation.z]);
         if (Array.isArray(angles) && angles.length === 6) {
             waist.rotation.z = angles[0];
             arm1.rotation.z = angles[1];
             arm2.rotation.z = angles[2];
             wrist.rotation.z = angles[3];
             hand.rotation.z = angles[4];
-            Claw.rotation.z = angles[5];
+            claw.rotation.z = angles[5];
         }
     }, "Posição Y");
     ikControlsContainer.addControl(sliderIKYContainer);
@@ -491,14 +499,14 @@ var createScene =  function () {
         // Chama a função de cinemática inversa e atualiza as juntas
         const T06 = T_fromMesh(actuator);
         T06[2][3] = value;
-        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, claw.rotation.z]);
         if (Array.isArray(angles) && angles.length === 6) {
             waist.rotation.z = angles[0];
             arm1.rotation.z = angles[1];
             arm2.rotation.z = angles[2];
             wrist.rotation.z = angles[3];
             hand.rotation.z = angles[4];
-            Claw.rotation.z = angles[5];
+            claw.rotation.z = angles[5];
         }
     }, "Posição Z");
     ikControlsContainer.addControl(sliderIKZContainer);
@@ -508,14 +516,14 @@ var createScene =  function () {
         // Chama a função de cinemática inversa e atualiza as juntas
         var T06 = T_fromMesh(actuator);
         T06 = setRoll(T06, BABYLON.Tools.ToRadians(value));
-        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);   
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, claw.rotation.z]);   
         if (Array.isArray(angles) && angles.length === 6) {
             waist.rotation.z = angles[0];
             arm1.rotation.z = angles[1];
             arm2.rotation.z = angles[2];
             wrist.rotation.z = angles[3];
             hand.rotation.z = angles[4];
-            Claw.rotation.z = angles[5];
+            claw.rotation.z = angles[5];
         }
     }, "Roll");
     ikControlsContainer.addControl(sliderIKRollContainer);  
@@ -525,14 +533,14 @@ var createScene =  function () {
         // Chama a função de cinemática inversa e atualiza as juntas
         var T06 = T_fromMesh(actuator);
         T06 = setPitch(T06, BABYLON.Tools.ToRadians(value));
-        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);   
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, claw.rotation.z]);   
         if (Array.isArray(angles) && angles.length === 6) {
             waist.rotation.z = angles[0];
             arm1.rotation.z = angles[1];
             arm2.rotation.z = angles[2];
             wrist.rotation.z = angles[3];
             hand.rotation.z = angles[4];
-            Claw.rotation.z = angles[5];
+            claw.rotation.z = angles[5];
         }
     }, "Pitch");
     ikControlsContainer.addControl(sliderIKPitchContainer);     
@@ -542,14 +550,14 @@ var createScene =  function () {
         // Chama a função de cinemática inversa e atualiza as juntas
         var T06 = T_fromMesh(actuator);
         T06 = setYaw(T06, BABYLON.Tools.ToRadians(value));
-        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, Claw.rotation.z]);   
+        var angles = inverse_kinematics(DH,T06,[waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, claw.rotation.z]);   
         if (Array.isArray(angles) && angles.length === 6) {
             waist.rotation.z = angles[0];
             arm1.rotation.z = angles[1];
             arm2.rotation.z = angles[2];
             wrist.rotation.z = angles[3];
             hand.rotation.z = angles[4];
-            Claw.rotation.z = angles[5];
+            claw.rotation.z = angles[5];
         }
     }, "Yaw");
     ikControlsContainer.addControl(sliderIKYawContainer);   
@@ -615,10 +623,10 @@ var createScene =  function () {
                     }
                     break;
                 case "c":
-                    Claw.rotation.z -= rotationSpeed; 
+                    claw.rotation.z -= rotationSpeed; 
                     break;
                 case "v": 
-                    Claw.rotation.z += rotationSpeed; 
+                    claw.rotation.z += rotationSpeed; 
                     break;
                 }
             updateSliders();
@@ -643,49 +651,216 @@ var createScene =  function () {
     });
 
     
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////SALVAR POSICIONAMENTO
-    ///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////SALVAR POSICIONAMENTO
+///////////////////////////////////////////////////////////////////////////////////////////
 
 
+    var isRoutineRunning = false;   
 
-
-
-
-
-
-
-
-
-
-
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    ///////ROTINA MANUAL DEMO
-    ///////////////////////////////////////////////////////////////////////////////////////////
-    
-    // Variavel que controla o estado da rotina
-    var isRoutineRunning = false;
-    // Iniciar a rotina
     function startRoutine() {
         if (!isRoutineRunning) {
+            if (pontos.length === 0) {
+                console.log("Nenhum ponto adicionado para executar a rotina.");
+                return;
+            }
             isRoutineRunning = true;
-            performRoutine();
+            clearAllCharts()
+            setPositionFromPoint(pontos[0])
+            performRoutine(pontos);
         }
     }
 
-    // Parar a rotina
     function stopRoutine() {
         isRoutineRunning = false;
     }
-    
-    i = 0;
 
+    async function performRoutine(pontos) {
+        if (!Array.isArray(pontos) || pontos.length < 2) {
+            isRoutineRunning = false;
+            if (typeof startStopButton !== "undefined" && startStopButton) {
+                startStopButton.textBlock.text = "Start Program";
+                startStopButton.background = "green";
+            }
+            return;
+        }
+
+        // tempo acumulado da rotina em ms — usado para que os gráficos usem tempo contínuo
+        let totalTimeMs = 0;
+
+        for (let i = 0; i + 1 < pontos.length && isRoutineRunning; i++) {
+            const durationMs = 3000; // tempo do segmento (ajuste se necessário)
+            await movePointToPoint(pontos[i], pontos[i + 1], durationMs, totalTimeMs);
+            totalTimeMs += durationMs;
+        }
+
+        // ao terminar, marcar rotina como parada e atualizar o botão
+        isRoutineRunning = false;
+        if (typeof startStopButton !== "undefined" && startStopButton) {
+            startStopButton.textBlock.text = "Start Program";
+            startStopButton.background = "green";
+        }
+    }
+
+    // Move suavemente de startPoint para endPoint em "durationMs" milissegundos usando um polinômio cúbico
+    // Condições: velocidade inicial e final = 0
+    // tOffsetMs: deslocamento de tempo (em ms) para manter os labels dos gráficos contínuos
+    function movePointToPoint(startPoint, endPoint, durationMs, tOffsetMs = 0) {
+        return new Promise((resolve) => {
+            const joints = ["waist", "arm1", "arm2", "wrist", "hand", "claw"];
+            const T = durationMs / 1000; // converter para segundos para derivadas consistentes
+            // calcular coeficientes a0..a3 para cada junta
+            const coeffs = {};
+            joints.forEach((j) => {
+                const q0 = startPoint[j];
+                const qf = endPoint[j];
+                const d = qf - q0;
+                const a0 = q0;
+                const a1 = 0;
+                const a2 = 3 * d / (T * T);
+                const a3 = -2 * d / (T * T * T);
+                coeffs[j] = { a0, a1, a2, a3 };
+            });
+
+            let startTime = null;
+            let rafId = null;
+
+            function step(ts) {
+                if (!startTime) startTime = ts;
+                const elapsedMs = ts - startTime;
+                const clampedMs = Math.min(elapsedMs, durationMs);
+                const tSec = clampedMs / 1000; // tempo em segundos, limitado a T
+
+                // atualizar juntas
+                joints.forEach((j) => {
+                    const { a0, a1, a2, a3 } = coeffs[j];
+                    // theta(t) = a0 + a1 t + a2 t^2 + a3 t^3
+                    const theta = a0 + a1 * tSec + a2 * tSec * tSec + a3 * tSec * tSec * tSec;
+
+                    // aplicar ao mesh
+                    switch (j) {
+                        case "waist":
+                            waist.rotation.z = theta;
+                            break;
+                        case "arm1":
+                            arm1.rotation.z = theta;
+                            break;
+                        case "arm2":
+                            arm2.rotation.z = theta;
+                            break;
+                        case "wrist":
+                            wrist.rotation.z = theta;
+                            break;
+                        case "hand":
+                            hand.rotation.z = theta;
+                            break;
+                        case "claw":
+                            claw.rotation.z = theta;
+                            break;
+                    }
+                });
+
+                // Atualizar sliders e prints
+                updateSliders();
+                printMatrixToDataTab(actuator);
+
+                // Calcular velocidades e acelerações analíticas (rad/s, rad/s²) e converter para graus
+                const velDeg = [];
+                const accDeg = [];
+                joints.forEach((j) => {
+                    const { a1, a2, a3 } = coeffs[j];
+                    // theta'(t) = a1 + 2 a2 t + 3 a3 t^2
+                    const thetaDot = a1 + 2 * a2 * tSec + 3 * a3 * tSec * tSec;
+                    // theta''(t) = 2 a2 + 6 a3 t
+                    const thetaDDot = 2 * a2 + 6 * a3 * tSec;
+                    velDeg.push(BABYLON.Tools.ToDegrees(thetaDot));
+                    accDeg.push(BABYLON.Tools.ToDegrees(thetaDDot));
+                });
+
+                // Adicionar dados aos charts (usa tempo total: tOffsetMs + elapsedMs)
+                if (typeof addData === "function" && typeof chart1 !== "undefined") {
+                    const totalLabel = ((tOffsetMs + elapsedMs) / 1000).toFixed(2);
+                    // posições (graus)
+                    addData(chart1, totalLabel,
+                        BABYLON.Tools.ToDegrees(waist.rotation.z),
+                        BABYLON.Tools.ToDegrees(arm1.rotation.z),
+                        BABYLON.Tools.ToDegrees(arm2.rotation.z),
+                        BABYLON.Tools.ToDegrees(wrist.rotation.z),
+                        BABYLON.Tools.ToDegrees(hand.rotation.z),
+                        BABYLON.Tools.ToDegrees(claw.rotation.z)
+                    );
+                    // velocidades (graus/s) -> chart2
+                    addData(chart2, totalLabel,
+                        velDeg[0], velDeg[1], velDeg[2], velDeg[3], velDeg[4], velDeg[5]
+                    );
+                    // acelerações (graus/s²) -> chart3
+                    addData(chart3, totalLabel,
+                        accDeg[0], accDeg[1], accDeg[2], accDeg[3], accDeg[4], accDeg[5]
+                    );
+                }
+
+                // terminar ou continuar
+                if (elapsedMs >= durationMs || !isRoutineRunning) {
+                    // garantir estado final exatamente igual ao endPoint
+                    setPositionFromPoint(endPoint);
+                    updateSliders();
+                    // garantir valores finais (vel e acc = 0) nos charts
+                    if (typeof addData === "function" && typeof chart1 !== "undefined") {
+                        const totalLabel = ((tOffsetMs + durationMs) / 1000).toFixed(2);
+                        addData(chart1, totalLabel,
+                            BABYLON.Tools.ToDegrees(endPoint.waist),
+                            BABYLON.Tools.ToDegrees(endPoint.arm1),
+                            BABYLON.Tools.ToDegrees(endPoint.arm2),
+                            BABYLON.Tools.ToDegrees(endPoint.wrist),
+                            BABYLON.Tools.ToDegrees(endPoint.hand),
+                            BABYLON.Tools.ToDegrees(endPoint.claw)
+                        );
+                        addData(chart2, totalLabel, 0, 0, 0, 0, 0, 0);
+                        addData(chart3, totalLabel, 0, 0, 0, 0, 0, 0);
+                    }
+                    if (rafId) cancelAnimationFrame(rafId);
+                    resolve();
+                    return;
+                }
+                rafId = requestAnimationFrame(step);
+            }
+
+            // iniciar loop
+            rafId = requestAnimationFrame(step);
+        });
+    }
+
+    function setPositionFromPoint(point) {
+        waist.rotation.z = point.waist;
+        arm1.rotation.z = point.arm1;
+        arm2.rotation.z = point.arm2;
+        wrist.rotation.z = point.wrist;
+        hand.rotation.z = point.hand;
+        claw.rotation.z = point.claw;
+    }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////ROTINA MANUAL DEMO
+///////////////////////////////////////////////////////////////////////////////////////////
+    // Variavel que controla o estado da rotina
+    var isDemoRunning = false;
+    // Iniciar a rotina
+    function startDemo() {
+        if (!isDemoRunning) {
+            isDemoRunning = true;
+            performDemo();
+        }
+    }
+    // Parar a rotina
+    function stopDemo() {
+        isDemoRunning = false;
+    }
+    i = 0;
     passoRotacao = 0.02 //rad
     // Função que realiza a rotina
-    function performRoutine() {
-        if (isRoutineRunning) {
+    function performDemo() {
+        if (isDemoRunning) {
             if (i < 60) {
                 waist.rotation.z += passoRotacao;
             }
@@ -702,7 +877,7 @@ var createScene =  function () {
                 hand.rotation.z -= passoRotacao;
             }
             if (i < 80) {
-                Claw.rotation.z -= passoRotacao;
+                claw.rotation.z -= passoRotacao;
             }
 
 
@@ -722,20 +897,20 @@ var createScene =  function () {
                 hand.rotation.z += passoRotacao;
             }
             if (i > 80 && i < 160) {
-                Claw.rotation.z += passoRotacao;
+                claw.rotation.z += passoRotacao;
             }
             if (i > 180) {
                 i = 0;
             }
             updateSliders();
-            adicionarPonto();
+            // adicionarPonto();
             i++;
             // Intervalo em milissegundos entre os movimentos
-            setTimeout(performRoutine, 50); 
+            setTimeout(performDemo, 50); 
             const newLabel = chart1.data.labels.length;
-            addData(chart1, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(Claw.rotation.z));  
-            addData(chart2, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(Claw.rotation.z));
-            addData(chart3, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(Claw.rotation.z));
+            addData(chart1, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(claw.rotation.z));  
+            addData(chart2, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(claw.rotation.z));
+            addData(chart3, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(claw.rotation.z));
 
         }
     }

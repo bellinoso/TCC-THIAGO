@@ -277,8 +277,9 @@ var createScene =  function () {
         }
     });
     UiPanelLeft.addControl(startStopButton);
-    
 
+
+    
     // Inicialmente, definir visibilidade dos eixos como falsa
     var toggleAxisButton = GUI.Button.CreateSimpleButton("toggleAxisButton", "Toggle Axes");
     var axesVisible = false;
@@ -330,7 +331,8 @@ var createScene =  function () {
             x: actuator.getAbsolutePosition().x,
             y: actuator.getAbsolutePosition().y,
             z: actuator.getAbsolutePosition().z,
-            indicador : BABYLON.MeshBuilder.CreateSphere("pontoEsfera", { diameter: 15 }, scene)
+            indicador : BABYLON.MeshBuilder.CreateSphere("pontoEsfera", { diameter: 15 }, scene),
+            deltaT: currentFrame
         };
 
         ponto.indicador.position = new BABYLON.Vector3(ponto.x, ponto.y, ponto.z);
@@ -352,6 +354,89 @@ var createScene =  function () {
         adicionarPonto();
     });
     UiPanelLeft.addControl(addPointButton);
+
+    // Container horizontal para os controles de quadro
+    var frameControlContainer = new BABYLON.GUI.StackPanel();
+    frameControlContainer.isVertical = false;
+    frameControlContainer.height = "40px";
+    frameControlContainer.width = "150px";
+    frameControlContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    frameControlContainer.paddingTop = "10px";
+
+    // Botão seta esquerda
+    var leftArrowButton = BABYLON.GUI.Button.CreateSimpleButton("leftArrowButton", "-");
+    leftArrowButton.width = "40px";
+    leftArrowButton.height = "30px";
+    leftArrowButton.color = "white";
+    leftArrowButton.background = "blue";
+    leftArrowButton.fontSize = "24px";
+
+    // Campo numérico central
+    var frameNumberInput = new BABYLON.GUI.InputText();
+    frameNumberInput.width = "70px";
+    frameNumberInput.height = "30px";
+    frameNumberInput.text = "1";
+    frameNumberInput.color = "white";
+    frameNumberInput.background = "gray";
+    frameNumberInput.fontSize = "18px";
+    frameNumberInput.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    frameNumberInput.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    frameNumberInput.maxWidth = 70;
+    frameNumberInput.thickness = 1;
+
+    // Botão seta direita
+    var rightArrowButton = BABYLON.GUI.Button.CreateSimpleButton("rightArrowButton", "+");
+    rightArrowButton.width = "40px";
+    rightArrowButton.height = "30px";
+    rightArrowButton.color = "white";
+    rightArrowButton.background = "blue";
+    rightArrowButton.fontSize = "24px";
+
+    // Valor do quadro atual
+    var currentFrame = 1;
+    function updateFrameInput() {
+        frameNumberInput.text = currentFrame.toString();
+    }
+
+    leftArrowButton.onPointerUpObservable.add(function () {
+        currentFrame = Math.max(0, currentFrame - 1);
+        updateFrameInput();
+    });
+
+    rightArrowButton.onPointerUpObservable.add(function () {
+        currentFrame = currentFrame + 1;
+        updateFrameInput();
+    });
+
+    frameNumberInput.onTextChangedObservable.add(function () {
+        var val = parseInt(frameNumberInput.text);
+        if (!isNaN(val) && val >= 0) {
+            currentFrame = val;
+        } else {
+            frameNumberInput.text = currentFrame.toString();
+        }
+    });
+
+    frameControlContainer.addControl(leftArrowButton);
+    frameControlContainer.addControl(frameNumberInput);
+    frameControlContainer.addControl(rightArrowButton);
+
+    UiPanelLeft.addControl(frameControlContainer);
+    function updateFrameControlsState() {
+        const disabled = pontos.length === 0;
+        frameControlContainer.isEnabled = !disabled;
+        leftArrowButton.isEnabled = !disabled;
+        rightArrowButton.isEnabled = !disabled;
+        frameNumberInput.isEnabled = !disabled;
+
+        const gray = "gray";
+        const blue = "blue";
+        leftArrowButton.background = disabled ? gray : blue;
+        rightArrowButton.background = disabled ? gray : blue;
+        frameNumberInput.background = disabled ? gray : "gray";
+    }
+
+    scene.onBeforeRenderObservable.add(updateFrameControlsState);
 
     //Adiciona os botões ao UiPanelLeft
     UiPanelLeft.addControl(startDemoButton);
@@ -689,7 +774,7 @@ var createScene =  function () {
         let totalTimeMs = 0;
 
         for (let i = 0; i + 1 < pontos.length && isRoutineRunning; i++) {
-            const durationMs = 3000; // tempo do segmento (ajuste se necessário)
+            const durationMs = pontos[i + 1].deltaT * 1000;
             await movePointToPoint(pontos[i], pontos[i + 1], durationMs, totalTimeMs);
             totalTimeMs += durationMs;
         }

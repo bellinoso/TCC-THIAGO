@@ -239,26 +239,6 @@ var createScene =  function () {
     advancedTexture.addControl(UiPanelLeft);
     
     // Botao de Start/Stop
-    var startDemoButton = GUI.Button.CreateSimpleButton("startDemoButton", "Start Demo");
-    startDemoButton.paddingTop = "10px";
-    startDemoButton.width = "150px";
-    startDemoButton.height = "40px";
-    startDemoButton.color = "white";
-    startDemoButton.background = "green";
-    startDemoButton.onPointerUpObservable.add(function () {
-        if (isDemoRunning) {
-            stopDemo();
-            startDemoButton.textBlock.text = "Start Demo";
-            startDemoButton.background = "green";
-        } else {
-            startDemo();
-            startDemoButton.textBlock.text = "Stop Demo";
-            startDemoButton.background = "red";
-        }
-    });
-    UiPanelLeft.addControl(startDemoButton);
-
-    // Botao de Start/Stop
     var startStopButton = GUI.Button.CreateSimpleButton("startStopButton", "Start Program");
     startStopButton.paddingTop = "10px";
     startStopButton.width = "150px";
@@ -270,9 +250,9 @@ var createScene =  function () {
             stopRoutine();
             startStopButton.textBlock.text = "Start Program";
             startStopButton.background = "green";
-        } else {
+        } else if (pontos.length > 1) {
             startRoutine();
-            startStopButton.textBlock.text = "Stop Program  ";
+            startStopButton.textBlock.text = "Stop Program";
             startStopButton.background = "red";
         }
     });
@@ -438,8 +418,37 @@ var createScene =  function () {
 
     scene.onBeforeRenderObservable.add(updateFrameControlsState);
 
+    function clearPontos() {
+        // remover esferas indicadoras da cena
+        pontos.forEach(p => {
+            if (p.indicador && !p.indicador.isDisposed()) {
+                p.indicador.dispose();
+            }
+        });
+        pontos = [];
+
+        // opcional: limpar a trajetória caso exista
+        if (typeof clearTrajectory === "function") {
+            clearTrajectory();
+        }
+
+        // atualizar estado dos controles dependentes de pontos
+        updateFrameControlsState();
+    }
+
+    // Botão para limpar pontos
+    var clearPointsButton = GUI.Button.CreateSimpleButton("clearPointsButton", "Clear Points");
+    clearPointsButton.paddingTop = "10px";
+    clearPointsButton.width = "150px";
+    clearPointsButton.height = "40px";
+    clearPointsButton.color = "white";
+    clearPointsButton.background = "red";
+    clearPointsButton.onPointerUpObservable.add(function () {
+        clearPontos();
+    });
+    UiPanelLeft.addControl(clearPointsButton);
+
     //Adiciona os botões ao UiPanelLeft
-    UiPanelLeft.addControl(startDemoButton);
     UiPanelLeft.addControl(toggleAxisButton);
     
     // Painel para os sliders (lado direito)
@@ -740,6 +749,55 @@ var createScene =  function () {
 ///////SALVAR POSICIONAMENTO
 ///////////////////////////////////////////////////////////////////////////////////////////
 
+    let trajectoryPoints = [];
+    let trajectoryLine = null;
+    let pendingSinceRebuild = 0; // quantos pontos novos desde a última recriação
+    const rebuildBatchSize = 3; // ajuste conforme desempenho desejado
+
+    function clearTrajectory() {
+        trajectoryPoints = [];
+        pendingSinceRebuild = 0;
+        if (trajectoryLine) {
+            trajectoryLine.dispose();
+            trajectoryLine = null;
+        }
+    }
+
+    function addTrajectoryPoint(vec3) {
+        trajectoryPoints.push(vec3);
+
+        if (!trajectoryLine) {
+            // primeira criação
+            trajectoryLine = BABYLON.MeshBuilder.CreateLines("trajectory", {
+                points: trajectoryPoints,
+                updatable: true
+            }, scene);
+            trajectoryLine.color = new BABYLON.Color3(1, 1, 1);
+            pendingSinceRebuild = 0;
+            return;
+        }
+
+        // Se o número de pontos mudou, precisamos recriar a malha.
+        // Para não recriar a cada ponto, espere acumular N pontos.
+        pendingSinceRebuild++;
+        if (pendingSinceRebuild >= rebuildBatchSize) {
+            trajectoryLine.dispose();
+            trajectoryLine = BABYLON.MeshBuilder.CreateLines("trajectory", {
+                points: trajectoryPoints,
+                updatable: true
+            }, scene);
+            trajectoryLine.color = new BABYLON.Color3(1, 1, 1);
+            pendingSinceRebuild = 0;
+        } else {
+            // Entre recriações, atualize a posição dos pontos já existentes
+            BABYLON.MeshBuilder.CreateLines(null, {
+                points: trajectoryPoints.slice(0, trajectoryLine.getVerticesData(BABYLON.VertexBuffer.PositionKind).length / 3),
+                updatable: true,
+                instance: trajectoryLine
+            });
+        }
+    }
+
 
     var isRoutineRunning = false;   
 
@@ -750,8 +808,13 @@ var createScene =  function () {
                 return;
             }
             isRoutineRunning = true;
-            clearAllCharts()
-            setPositionFromPoint(pontos[0])
+            clearAllCharts();
+
+            // limpar trajeto e adicionar ponto inicial do atuador
+            clearTrajectory();
+            setPositionFromPoint(pontos[0]);
+            addTrajectoryPoint(new BABYLON.Vector3(pontos[0].x, pontos[0].y, pontos[0].z));
+
             performRoutine(pontos);
         }
     }
@@ -789,7 +852,7 @@ var createScene =  function () {
 
     // Move suavemente de startPoint para endPoint em "durationMs" milissegundos usando um polinômio cúbico
     // Condições: velocidade inicial e final = 0
-    // tOffsetMs: deslocamento de tempo (em ms) para manter os labels dos gráficos contínuos
+    // tOffsetMs: deslocamento de tempo (em ms) para manter os labels dos gráficos contínuo
     function movePointToPoint(startPoint, endPoint, durationMs, tOffsetMs = 0) {
         return new Promise((resolve) => {
             const joints = ["waist", "arm1", "arm2", "wrist", "hand", "claw"];
@@ -816,7 +879,7 @@ var createScene =  function () {
                 const clampedMs = Math.min(elapsedMs, durationMs);
                 const tSec = clampedMs / 1000; // tempo em segundos, limitado a T
 
-                // atualizar juntas
+                // atualizar juntas por polinômio cúbico
                 joints.forEach((j) => {
                     const { a0, a1, a2, a3 } = coeffs[j];
                     // theta(t) = a0 + a1 t + a2 t^2 + a3 t^3
@@ -824,24 +887,12 @@ var createScene =  function () {
 
                     // aplicar ao mesh
                     switch (j) {
-                        case "waist":
-                            waist.rotation.z = theta;
-                            break;
-                        case "arm1":
-                            arm1.rotation.z = theta;
-                            break;
-                        case "arm2":
-                            arm2.rotation.z = theta;
-                            break;
-                        case "wrist":
-                            wrist.rotation.z = theta;
-                            break;
-                        case "hand":
-                            hand.rotation.z = theta;
-                            break;
-                        case "claw":
-                            claw.rotation.z = theta;
-                            break;
+                        case "waist": waist.rotation.z = theta; break;
+                        case "arm1":  arm1.rotation.z  = theta; break;
+                        case "arm2":  arm2.rotation.z  = theta; break;
+                        case "wrist": wrist.rotation.z = theta; break;
+                        case "hand":  hand.rotation.z  = theta; break;
+                        case "claw":  claw.rotation.z  = theta; break;
                     }
                 });
 
@@ -849,7 +900,12 @@ var createScene =  function () {
                 updateSliders();
                 printMatrixToDataTab(actuator);
 
-                // Calcular velocidades e acelerações analíticas (rad/s, rad/s²) e converter para graus
+                // Registrar ponto do atuador e atualizar linha do trajeto
+                // Usa posição absoluta atual do "actuator"
+                const tipPos = actuator.getAbsolutePosition().clone();
+                addTrajectoryPoint(tipPos);
+
+                // --- gráficos (pos, vel, acc) ---
                 const velDeg = [];
                 const accDeg = [];
                 joints.forEach((j) => {
@@ -889,7 +945,10 @@ var createScene =  function () {
                     // garantir estado final exatamente igual ao endPoint
                     setPositionFromPoint(endPoint);
                     updateSliders();
-                    // garantir valores finais (vel e acc = 0) nos charts
+
+                    // garantir que o ponto final também esteja no trajeto
+                    addTrajectoryPoint(actuator.getAbsolutePosition().clone());
+
                     if (typeof addData === "function" && typeof chart1 !== "undefined") {
                         const totalLabel = ((tOffsetMs + durationMs) / 1000).toFixed(2);
                         addData(chart1, totalLabel,
@@ -924,84 +983,6 @@ var createScene =  function () {
         claw.rotation.z = point.claw;
     }
 
-
-///////////////////////////////////////////////////////////////////////////////////////////
-///////ROTINA MANUAL DEMO
-///////////////////////////////////////////////////////////////////////////////////////////
-    // Variavel que controla o estado da rotina
-    var isDemoRunning = false;
-    // Iniciar a rotina
-    function startDemo() {
-        if (!isDemoRunning) {
-            isDemoRunning = true;
-            performDemo();
-        }
-    }
-    // Parar a rotina
-    function stopDemo() {
-        isDemoRunning = false;
-    }
-    i = 0;
-    passoRotacao = 0.02 //rad
-    // Função que realiza a rotina
-    function performDemo() {
-        if (isDemoRunning) {
-            if (i < 60) {
-                waist.rotation.z += passoRotacao;
-            }
-            if (i < 60) {
-                arm1.rotation.z -= passoRotacao;
-            }
-            if (i < 40) {
-                arm2.rotation.z += passoRotacao;
-            }
-            if (i < 80) {
-                wrist.rotation.z += passoRotacao;
-            }
-            if (i < 80) {
-                hand.rotation.z -= passoRotacao;
-            }
-            if (i < 80) {
-                claw.rotation.z -= passoRotacao;
-            }
-
-
-            if (i > 80 && i < 160) {
-                waist.rotation.z -= passoRotacao;
-            }
-            if (i > 60 && i < 120) {
-                arm1.rotation.z += passoRotacao;
-            }
-            if (i > 100 && i < 140) {
-                arm2.rotation.z -= passoRotacao;
-            }
-            if (i > 40 && i < 110) {
-                wrist.rotation.z -= passoRotacao;
-            }
-            if (i > 80 && i < 160) {
-                hand.rotation.z += passoRotacao;
-            }
-            if (i > 80 && i < 160) {
-                claw.rotation.z += passoRotacao;
-            }
-            if (i > 180) {
-                i = 0;
-            }
-            updateSliders();
-            // adicionarPonto();
-            i++;
-            // Intervalo em milissegundos entre os movimentos
-            setTimeout(performDemo, 50); 
-            const newLabel = chart1.data.labels.length;
-            addData(chart1, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(claw.rotation.z));  
-            addData(chart2, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(claw.rotation.z));
-            addData(chart3, newLabel/10, BABYLON.Tools.ToDegrees(waist.rotation.z),BABYLON.Tools.ToDegrees(arm1.rotation.z),BABYLON.Tools.ToDegrees(arm2.rotation.z),BABYLON.Tools.ToDegrees(wrist.rotation.z),BABYLON.Tools.ToDegrees(hand.rotation.z),BABYLON.Tools.ToDegrees(claw.rotation.z));
-
-        }
-    }
-///////////////////////////////////////////////////////////////////////////////////////////
-///////FIM ROTINA DEMO
-///////////////////////////////////////////////////////////////////////////////////////////
     return scene;
 };
 

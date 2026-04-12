@@ -462,13 +462,16 @@ var createScene =  function () {
     var servoSlidersContainer = new BABYLON.GUI.StackPanel();
     servoSlidersContainer.width = "220px";
     servoSlidersContainer.isVisible = true; // Começa visível
+    servoSlidersContainer.paddingTop = "20px";
+    
 
     var ikControlsContainer = new BABYLON.GUI.StackPanel();
     ikControlsContainer.width = "220px";
     ikControlsContainer.isVisible = false; // Começa oculto
+    ikControlsContainer.paddingTop = "20px";
     
     // Botão para alternar entre os menus
-    var toggleMenuButton = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "Alternar Menu");
+    var toggleMenuButton = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "Toggle direct/inverse kinematics");
     toggleMenuButton.width = "150px";
     toggleMenuButton.height = "40px";
     toggleMenuButton.color = "white";
@@ -476,7 +479,7 @@ var createScene =  function () {
     toggleMenuButton.onPointerUpObservable.add(function () {
         servoSlidersContainer.isVisible = !servoSlidersContainer.isVisible;
         ikControlsContainer.isVisible = !ikControlsContainer.isVisible;
-        toggleMenuButton.textBlock.text = servoSlidersContainer.isVisible ? "Ir para Cinemática Reversa" : "Ir para Servos";
+        toggleMenuButton.textBlock.text = servoSlidersContainer.isVisible ? "Toggle direct/inverse kinematics" : "Toggle direct/inverse kinematics";
         updateSliders();
     });
     UiPanelRight.addControl(toggleMenuButton);
@@ -517,41 +520,41 @@ var createScene =  function () {
     var sliderWaistContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(waistIni), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         waist.rotation.z = BABYLON.Tools.ToRadians(value);
-    }, "Servo1");
+    }, "θ1 (deg)");
     servoSlidersContainer.addControl(sliderWaistContainer);
     
     // Adicionando slider para arm1.rotation.z
     var sliderArm1Container = createSliderWithText(0, 180, BABYLON.Tools.ToDegrees(arm1Ini), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         arm1.rotation.z = BABYLON.Tools.ToRadians(value);
-    }, "Servo2");
+    }, "θ2 (deg)");
     servoSlidersContainer.addControl(sliderArm1Container);
     
     // Adicionando slider para arm2.rotation.z
     var sliderArm2Container = createSliderWithText(-240, 61, BABYLON.Tools.ToDegrees(arm2Ini), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         arm2.rotation.z = BABYLON.Tools.ToRadians(value);
-    }, "Servo3");
+    }, "θ3 (deg)");
     servoSlidersContainer.addControl(sliderArm2Container);
     
     // Adicionando slider para wrist.rotation.z
     var sliderWristContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(wristIni), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         wrist.rotation.z = BABYLON.Tools.ToRadians(value);
-    }, "Servo4");
+    }, "θ4 (deg)");
     servoSlidersContainer.addControl(sliderWristContainer);
     
     // Adicionando slider para hand.rotation.z
     var sliderHandContainer = createSliderWithText(-90, 90, BABYLON.Tools.ToDegrees(handIni), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         hand.rotation.z = BABYLON.Tools.ToRadians(value);
-    }, "Servo5");
+    }, "θ5 (deg)");
     servoSlidersContainer.addControl(sliderHandContainer);
     
     var sliderClawContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(clawIni), function (value) {
         if (isUpdating) return; // Ignorar se estiver atualizando os sliders
         claw.rotation.z = BABYLON.Tools.ToRadians(value);
-    }, "Servo6");
+    }, "θ6 (deg)");
     servoSlidersContainer.addControl(sliderClawContainer);
     
     var sliderIKXContainer = createSliderWithText(-1500, 1500, actuatorIniX, function (value) {
@@ -752,7 +755,7 @@ var createScene =  function () {
     let trajectoryPoints = [];
     let trajectoryLine = null;
     let pendingSinceRebuild = 0; // quantos pontos novos desde a última recriação
-    const rebuildBatchSize = 3; // ajuste conforme desempenho desejado
+    const rebuildBatchSize = 8; // ajuste conforme desempenho desejado
 
     function clearTrajectory() {
         trajectoryPoints = [];

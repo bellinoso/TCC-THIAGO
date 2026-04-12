@@ -104,7 +104,6 @@ function normalizeAngle(angle) {
     return normalizedAngle;
   }
 
-
 function printMatrixToDataTab(mesh) {
     const matrix = mesh.getWorldMatrix().toArray();
     // Transpor a matriz 4x4
@@ -114,22 +113,65 @@ function printMatrixToDataTab(mesh) {
             transposed[i * 4 + j] = matrix[j * 4 + i];
         }
     }
-    let html = '<table border="1" style="border-collapse:collapse;text-align:center;">';
+    let transformHtml = '<table border="1" style="border-collapse:collapse;text-align:center;margin:0 auto;">';
     for (let i = 0; i < 4; i++) {
-        html += '<tr>';
+        transformHtml += '<tr>';
         for (let j = 0; j < 4; j++) {
-            html += `<td>${transposed[i * 4 + j].toFixed(2)}</td>`;
+            transformHtml += `<td style="padding:2px;">${transposed[i * 4 + j].toFixed(2)}</td>`;
         }
-        html += '</tr>';
+        transformHtml += '</tr>';
     }
-    html += '</table>';
+    transformHtml += '</table>';
+
+    // Montar tabela DH (se existir a variável global DH)
+    const dhParams = (typeof DH !== "undefined") ? DH : (window.DH || null);
+    let dhHtml = '';
+    if (dhParams && Array.isArray(dhParams)) {
+        const scene = mesh.getScene ? mesh.getScene() : null;
+        const jointNames = ['waist', 'arm1', 'arm2', 'wrist', 'hand', 'claw'];
+        // obter ângulos atuais (em graus) das juntas, se os meshes existirem; caso contrário usar DH theta
+        const jointAnglesDeg = dhParams.map((row, i) => {
+            let val = row[3]; // valor theta no DH (deg)
+            if (scene) {
+                const m = scene.getMeshByName(jointNames[i]);
+                if (m && m.rotation && typeof m.rotation.z === 'number') {
+                    val = BABYLON.Tools.ToDegrees(m.rotation.z);
+                }
+            }
+            return val;
+        });
+
+        dhHtml += '<table border="1" style="border-collapse:collapse;text-align:center;margin:0 auto;">';
+        dhHtml += '<tr><th style="padding:3px;">i</th><th style="padding:3px;">α (deg)</th><th style="padding:3px;">a (mm)</th><th style="padding:3px;">d (mm)</th><th style="padding:3px;">θ (deg)</th></tr>';
+        for (let i = 0; i < dhParams.length; i++) {
+            const row = dhParams[i];
+            const alpha = Number(row[0]).toFixed(2);
+            const a = Number(row[1]).toFixed(2);
+            const d = Number(row[2]).toFixed(2);
+            const thetaDisplay = `<b>${Number(jointAnglesDeg[i]).toFixed(2)}</b>`;
+            dhHtml += `<tr><td style="padding:3px;">${i+1}</td><td style="padding:3px;">${alpha}</td><td style="padding:3px;">${a}</td><td style="padding:3px;">${d}</td><td style="padding:3px;">${thetaDisplay}</td></tr>`;
+        }
+        dhHtml += '</table>';
+    }
+
     document.querySelector('#tab-data').innerHTML = `
-        <div style="padding:20px;">
-            <b>Matriz de transformação global:</b><br><br>
-            ${html}
+        <div style="display:flex;gap:0px;align-items:flex-start;padding:5px;">
+            <div style="flex:1;min-width:300px;">
+                <div style="padding:0px;">
+                    <b>Matriz DH</b><br><br>
+                    ${dhHtml}
+                </div>
+            </div>
+            <div style="flex:1;min-width:300px;">
+                <div style="padding:0px;">
+                    <b>Matriz de transformação global:</b><br><br>
+                    ${transformHtml}
+                </div>
+            </div>
         </div>
     `;
 }
+
 
 function inverse_kinematics(DH_params, T06, prevAngles) {
     const params = DH_params.map(r => r.slice());

@@ -192,13 +192,3 @@ function clearAllCharts() {
         chart.update();
     });
 }
-
-// // Exemplo de como adicionar dados aos gráficos
-// setInterval(() => {
-//     const newData1 = Math.random() * 100;
-//     const newData2 = Math.random() * 100;
-//     const newLabel = chart1.data.labels.length;
-//     addData(chart1, newLabel, newData1, newData2, newData1+newData2, newData1*1.4, -newData1/2, newData2/2);
-//     addData(chart2, newLabel, newData1 / -2, newData2 / 2, newData1+newData2, newData1*2, newData2/2, newData1/2);
-//     addData(chart3, newLabel, newData1 / 1, newData2 / -3, newData1+newData2, newData1*2, newData2/2, newData1/2);
-// }, 1000);

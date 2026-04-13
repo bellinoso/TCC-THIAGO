@@ -112,31 +112,63 @@ const chartConfig = {
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                position: 'bottom', // Move a legenda para baixo
+                position: 'bottom',
                 labels: {
                     usePointStyle: true,
                     pointStyle: 'line',
-                    borderWidth: 6
+                    borderWidth: 6,
+                    font: {
+                        size: 16,      // legenda
+                        family: 'Arial',
+                        weight: '300'
+                    }
                 }
             },
             title: {
                 display: true,
-                text: ''
+                text: '',
+                font: {
+                    size: 15,          // título do gráfico
+                    family: 'Arial',
+                    weight: '400'
+                }
             }
         },
         scales: {
             x: {
                 type: 'linear',
-                position: 'bottom'
-                // title: {
-                //     display: true,
-                //     text: 't [ s ]' // Texto será configurado para cada gráfico individualmente
-                // }
-            },
-            y: {
+                position: 'bottom',
+                ticks: {
+                    font: {
+                        size: 14,      // números do eixo X
+                        family: 'Arial'
+                    }
+                },
                 title: {
                     display: true,
-                    text: '' // Texto será configurado para cada gráfico individualmente
+                    text: '',
+                    font: {
+                        size: 13,      // título do eixo X (se usar)
+                        family: 'Arial',
+                        weight: '400'
+                    }
+                }
+            },
+            y: {
+                ticks: {
+                    font: {
+                        size: 14,      // números do eixo Y
+                        family: 'Arial'
+                    }
+                },
+                title: {
+                    display: true,
+                    text: '',
+                    font: {
+                        size: 17,      // título do eixo Y
+                        family: 'Arial',
+                        weight: '300'
+                    }
                 }
             }
         }

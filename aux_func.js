@@ -113,15 +113,38 @@ function printMatrixToDataTab(mesh) {
             transposed[i * 4 + j] = matrix[j * 4 + i];
         }
     }
+
     let transformHtml = '<table border="1" style="border-collapse:collapse;text-align:center;margin:0 auto;">';
     for (let i = 0; i < 4; i++) {
         transformHtml += '<tr>';
         for (let j = 0; j < 4; j++) {
-            transformHtml += `<td style="padding:2px;">${transposed[i * 4 + j].toFixed(2)}</td>`;
+            const value = transposed[i * 4 + j].toFixed(2);
+
+            const isRotation = (i < 3 && j < 3);   // R (3x3)
+            const isPosition = (i < 3 && j === 3); // t = [x y z]^T
+            const isBottomRow = (i === 3 && j < 3);
+            const isOne = (i === 3 && j === 3);
+
+            let bg = '#ffffff';
+            if (isRotation) bg = '#dbeafe';     // azul claro
+            else if (isPosition) bg = '#dcfce7';// verde claro
+            else if (isBottomRow) bg = '#f3f4f6';// cinza claro
+            else if (isOne) bg = '#fef3c7';     // amarelo claro
+
+            transformHtml += `<td style="padding:4px;background:${bg};">${value}</td>`;
         }
         transformHtml += '</tr>';
     }
     transformHtml += '</table>';
+
+    const transformLegendHtml = `
+        <div style="margin-top:8px;font-size:12px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <div><span style="display:inline-block;width:12px;height:12px;background:#dbeafe;border:1px solid #999;margin-right:4px;"></span>Rotação (R, 3x3)</div>
+            <div><span style="display:inline-block;width:12px;height:12px;background:#dcfce7;border:1px solid #999;margin-right:4px;"></span>Posição (x, y, z)</div>
+            <div><span style="display:inline-block;width:12px;height:12px;background:#f3f4f6;border:1px solid #999;margin-right:4px;"></span>Linha homogênea</div>
+            <div><span style="display:inline-block;width:12px;height:12px;background:#fef3c7;border:1px solid #999;margin-right:4px;"></span>Elemento [4,4] = 1</div>
+        </div>
+    `;
 
     // Montar tabela DH (se existir a variável global DH)
     const dhParams = (typeof DH !== "undefined") ? DH : (window.DH || null);
@@ -166,6 +189,7 @@ function printMatrixToDataTab(mesh) {
                 <div style="padding:0px;">
                     <b>Matriz de transformação global:</b><br><br>
                     ${transformHtml}
+                    ${transformLegendHtml}
                 </div>
             </div>
         </div>
@@ -453,4 +477,4 @@ function setYaw(T, yaw) {
     T[2][0] = -s2;              T[2][1] = c2*s3;             T[2][2] = c2*c3;
 
     return T;
-}   
+}

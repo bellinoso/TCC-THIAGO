@@ -12,7 +12,7 @@ function createSliderWithText(min, max, initialValue, onChange, labelText) {
     var label = new BABYLON.GUI.TextBlock();
     label.text = labelText;
     label.height = "20px";
-    label.color = "white";
+    label.color = "black";
     label.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     container.addControl(label);
 
@@ -27,8 +27,8 @@ function createSliderWithText(min, max, initialValue, onChange, labelText) {
     slider.value = initialValue;
     slider.height = "20px";
     slider.width = "150px";
-    slider.color = "white";
-    slider.background = "gray";
+    slider.color = "#1d4ed8";
+    slider.background = "#d1d5db";
     slider.onValueChangedObservable.add(function (value) {
         inputText.text = value.toFixed(2);
         onChange(value);
@@ -37,8 +37,8 @@ function createSliderWithText(min, max, initialValue, onChange, labelText) {
     var inputText = new BABYLON.GUI.InputText();
     inputText.width = "60px";
     inputText.text = initialValue.toFixed(2);
-    inputText.color = "white";
-    inputText.background = "gray";
+    inputText.color = "black";
+    inputText.background = "#f3f4f6";
     inputText.textHorizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
     inputText.onBlurObservable.add(function () {
         var value = parseFloat(inputText.text);
@@ -65,14 +65,223 @@ var startRenderLoop = function (engine, canvas) {
     });
 }
 
-function showAxis(scene, parent) {
-    var axesViewer = new BABYLON.Debug.AxesViewer(scene, 100);
+function createTextLabel(scene, text, position, parent, options) {
+    options = options || {};
+    var width = options.width || 48;
+    var height = options.height || 22;
+    var textureWidth = options.textureWidth || 256;
+    var textureHeight = options.textureHeight || 128;
+    var font = options.font || "bold 72px Arial";
+    var color = options.color || "#111111";
+
+    var plane = BABYLON.MeshBuilder.CreatePlane("label_" + text, {
+        width: width,
+        height: height
+    }, scene);
+    plane.position = position.clone();
+    plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+    plane.isPickable = false;
+
+    var texture = new BABYLON.DynamicTexture("texture_" + text, {
+        width: textureWidth,
+        height: textureHeight
+    }, scene, false);
+    texture.hasAlpha = true;
+    texture.drawText(text, null, 84, font, color, "transparent", true, true);
+
+    var material = new BABYLON.StandardMaterial("mat_label_" + text, scene);
+    material.diffuseTexture = texture;
+    material.emissiveTexture = texture;
+    material.opacityTexture = texture;
+    material.backFaceCulling = false;
+    material.disableLighting = true;
+
+    plane.material = material;
     if (parent) {
-        axesViewer.xAxis.parent = parent;
-        axesViewer.yAxis.parent = parent;
-        axesViewer.zAxis.parent = parent;
+        plane.parent = parent;
     }
-    return axesViewer;
+
+    return plane;
+}
+
+function makeFlatMaterial(scene, name, color) {
+    var material = new BABYLON.StandardMaterial(name, scene);
+    material.diffuseColor = color;
+    material.specularColor = new BABYLON.Color3(0, 0, 0);
+    return material;
+}
+
+function enableSketchEdges(mesh, color, width) {
+    mesh.enableEdgesRendering();
+    mesh.edgesWidth = width || 2;
+    mesh.edgesColor = color || new BABYLON.Color4(0, 0, 0, 1);
+}
+
+function createAxisArrow(scene, parent, axis, length, color, label) {
+    var points = [BABYLON.Vector3.Zero()];
+    var tip = BABYLON.Vector3.Zero();
+    if (axis === "x") {
+        tip.x = length;
+    } else if (axis === "y") {
+        tip.y = length;
+    } else {
+        tip.z = length;
+    }
+    points.push(tip);
+
+    var line = BABYLON.MeshBuilder.CreateLines("axis_" + label, { points: points }, scene);
+    line.color = color;
+    line.parent = parent;
+    line.isPickable = false;
+
+    var cone = BABYLON.MeshBuilder.CreateCylinder("axis_tip_" + label, {
+        diameterTop: 0,
+        diameterBottom: 7,
+        height: 16,
+        tessellation: 20
+    }, scene);
+    cone.position = tip.clone();
+    cone.material = makeFlatMaterial(scene, "mat_axis_tip_" + label, color);
+    cone.isPickable = false;
+
+    if (axis === "x") {
+        cone.rotation.z = -Math.PI / 2;
+    } else if (axis === "z") {
+        cone.rotation.x = Math.PI / 2;
+    }
+    cone.parent = parent;
+
+    var labelPosition = tip.scale(1.18);
+    var textLabel = createTextLabel(scene, label, labelPosition, parent, {
+        width: 52,
+        height: 24,
+        color: "#111111",
+        font: "bold 84px Arial"
+    });
+
+    return {
+        dispose: function () {
+            line.dispose();
+            cone.dispose();
+            textLabel.dispose();
+        }
+    };
+}
+
+function showAxis(scene, parent, frameLabel, options) {
+    options = options || {};
+    var length = options.length || 80;
+    var color = options.color || new BABYLON.Color3(0.05, 0.15, 1);
+    var suffix = frameLabel || "";
+    var parts = [
+        createAxisArrow(scene, parent, "x", length, color, "x" + suffix),
+        createAxisArrow(scene, parent, "y", length, color, "y" + suffix),
+        createAxisArrow(scene, parent, "z", length, color, "z" + suffix)
+    ];
+
+    return {
+        dispose: function () {
+            parts.forEach(function (part) {
+                part.dispose();
+            });
+        }
+    };
+}
+
+function createLocalTube(scene, name, parent, start, end, radius, material, edgeColor) {
+    var tube = BABYLON.MeshBuilder.CreateTube(name, {
+        path: [start, end],
+        radius: radius,
+        tessellation: 12
+    }, scene);
+    tube.material = material;
+    tube.parent = parent;
+    tube.isPickable = false;
+    enableSketchEdges(tube, edgeColor || new BABYLON.Color4(0, 0, 0, 1), 1.2);
+    return tube;
+}
+
+function createJointCylinder(scene, name, parent, radius, height, material) {
+    var joint = BABYLON.MeshBuilder.CreateCylinder(name, {
+        diameter: radius * 2,
+        height: height,
+        tessellation: 32
+    }, scene);
+    joint.rotation.x = Math.PI / 2;
+    joint.material = material;
+    joint.parent = parent;
+    joint.isPickable = false;
+    enableSketchEdges(joint, new BABYLON.Color4(0, 0, 0, 1), 1.4);
+    return joint;
+}
+
+function createRotationArc(scene, name, parent, radius, label) {
+    var points = [];
+    var start = BABYLON.Tools.ToRadians(35);
+    var end = BABYLON.Tools.ToRadians(300);
+    var steps = 28;
+    for (var i = 0; i <= steps; i++) {
+        var t = start + (end - start) * i / steps;
+        points.push(new BABYLON.Vector3(radius * Math.cos(t), radius * Math.sin(t), 0));
+    }
+
+    var arc = BABYLON.MeshBuilder.CreateLines(name, { points: points }, scene);
+    arc.color = new BABYLON.Color3(0.05, 0.15, 1);
+    arc.parent = parent;
+    arc.isPickable = false;
+
+    var labelPlane = createTextLabel(scene, label, new BABYLON.Vector3(radius * 0.8, -radius * 0.85, 0), parent, {
+        width: 44,
+        height: 20,
+        color: "#111111",
+        font: "italic 68px Arial"
+    });
+
+    return { arc: arc, label: labelPlane };
+}
+
+function createSchematicRobot(scene, nodes) {
+    var gray = makeFlatMaterial(scene, "mat_schematic_gray", new BABYLON.Color3(0.78, 0.78, 0.72));
+    var dark = makeFlatMaterial(scene, "mat_schematic_dark", new BABYLON.Color3(0.08, 0.08, 0.08));
+    var linkRadius = 5;
+
+    var basePlate = BABYLON.MeshBuilder.CreateBox("schematic_base_plate", {
+        width: 180,
+        height: 180,
+        depth: 8
+    }, scene);
+    basePlate.position.z = -4;
+    basePlate.material = gray;
+    basePlate.isPickable = false;
+    enableSketchEdges(basePlate, new BABYLON.Color4(0, 0, 0, 1), 1.3);
+
+    createLocalTube(scene, "schematic_d1_lower", nodes.base, new BABYLON.Vector3(0, 0, 0), nodes.servoWaist.position.clone(), linkRadius, dark);
+    createLocalTube(scene, "schematic_d1_upper", nodes.waist, new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 0, nodes.servo01.position.z), linkRadius, dark);
+    createLocalTube(scene, "schematic_a1", nodes.waist, new BABYLON.Vector3(0, 0, nodes.servo01.position.z), nodes.servo01.position.clone(), linkRadius, dark);
+    createLocalTube(scene, "schematic_a2", nodes.arm1, BABYLON.Vector3.Zero(), nodes.servo02.position.clone(), linkRadius, dark);
+    createLocalTube(scene, "schematic_d4", nodes.wrist, BABYLON.Vector3.Zero(), nodes.servo04.position.clone(), linkRadius, dark);
+    createLocalTube(scene, "schematic_d6", nodes.claw, BABYLON.Vector3.Zero(), nodes.actuator.position.clone(), linkRadius, dark);
+
+    createJointCylinder(scene, "schematic_joint_0", nodes.servoWaist, 24, 95, gray);
+    createJointCylinder(scene, "schematic_joint_1", nodes.servo01, 30, 95, gray);
+    createJointCylinder(scene, "schematic_joint_2", nodes.servo02, 28, 95, gray);
+    createJointCylinder(scene, "schematic_joint_3", nodes.servo03, 26, 85, gray);
+    createJointCylinder(scene, "schematic_joint_4", nodes.servo04, 24, 80, gray);
+    createJointCylinder(scene, "schematic_joint_5", nodes.servo05, 22, 70, gray);
+    createJointCylinder(scene, "schematic_tool", nodes.actuator, 18, 70, gray);
+
+    createTextLabel(scene, "d1", new BABYLON.Vector3(-55, 0, 100), nodes.base, { width: 46, height: 22, font: "italic 76px Arial" });
+    createTextLabel(scene, "a1", new BABYLON.Vector3(55, 0, nodes.servo01.position.z + 32), nodes.waist, { width: 44, height: 22, font: "italic 76px Arial" });
+    createTextLabel(scene, "a2", new BABYLON.Vector3(200, 0, 38), nodes.arm1, { width: 44, height: 22, font: "italic 76px Arial" });
+    createTextLabel(scene, "d4", new BABYLON.Vector3(0, 0, 190), nodes.wrist, { width: 44, height: 22, font: "italic 76px Arial" });
+    createTextLabel(scene, "d6", new BABYLON.Vector3(0, 0, 112), nodes.claw, { width: 44, height: 22, font: "italic 76px Arial" });
+
+    createRotationArc(scene, "theta_1_arc", nodes.servoWaist, 50, "theta1");
+    createRotationArc(scene, "theta_2_arc", nodes.servo01, 48, "theta2");
+    createRotationArc(scene, "theta_3_arc", nodes.servo02, 46, "theta3");
+    createRotationArc(scene, "theta_4_arc", nodes.servo03, 42, "theta4");
+    createRotationArc(scene, "theta_5_arc", nodes.servo04, 38, "theta5");
+    createRotationArc(scene, "theta_6_arc", nodes.servo05, 34, "theta6");
 }
 
 function toggleTransparency(importedMeshes, transparent) {

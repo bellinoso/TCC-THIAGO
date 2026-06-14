@@ -22,13 +22,17 @@ var createScene =  function () {
     // Necessario o comando abaixo para respeitar a regra da mao direita.
     scene.useRightHandedSystem = true
     
-    scene.clearColor = new BABYLON.Color4(0.2, 0.3, 0.5, 1); // RGBA values: Red, Green, Blue, Alpha
-    var camera = new BABYLON.ArcRotateCamera("Camera", BABYLON.Tools.ToRadians(45), BABYLON.Tools.ToRadians(60), 500, new BABYLON.Vector3(0, 0, 450), scene);
+    scene.clearColor = new BABYLON.Color4(1, 1, 1, 1);
+    scene.ambientColor = new BABYLON.Color3(1, 1, 1);
+    scene.shadowsEnabled = false;
+
+    var camera = new BABYLON.ArcRotateCamera("Camera", BABYLON.Tools.ToRadians(-45), BABYLON.Tools.ToRadians(60), 1800, new BABYLON.Vector3(70, 0, 500), scene);
+    camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
     
     camera.lowerBetaLimit = 0.1; // Limite inferior de inclinacao
     camera.upperBetaLimit = (Math.PI / 2) * 0.99; // Limite superior de inclinacao
     camera.lowerRadiusLimit = 500; // Limite mínimo de zoom
-    camera.radius= 1500;
+    camera.radius = 1800;
     camera.upperRadiusLimit = 5000; // Limite máximo de zoom
     camera.wheelPrecision = 1; // Sensibilidade do scroll do mouse
     camera.panningSensibility = 30; // Sensibilidade de arrasto do mouse
@@ -43,83 +47,96 @@ var createScene =  function () {
     var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 0, 1), scene);
     
     // Reduzindo levemente a iluminacao
-    light.intensity = 0.7 ;
+    light.intensity = 0.95;
     
-    // Importacao e posicionamento dos modelos
+    function updateOrthographicView() {
+        var aspect = engine.getRenderWidth() / engine.getRenderHeight();
+        var verticalSize = 1250;
+        camera.orthoTop = verticalSize / 2;
+        camera.orthoBottom = -verticalSize / 2;
+        camera.orthoLeft = -verticalSize * aspect / 2;
+        camera.orthoRight = verticalSize * aspect / 2;
+    }
+    updateOrthographicView();
 
+    // Modelos STL detalhados desligados para manter a visao esquematica.
+    var showDetailedModels = false;
     var importedMeshes = [];
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Base.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = base;
-        importedMesh.rotation.x = BABYLON.Tools.ToRadians(90); 
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        importedMeshes.push(importedMesh);
-    });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Waist.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = waist;
-        importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
-        importedMesh.rotation.z = BABYLON.Tools.ToRadians(90);
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-        importedMeshes.push(importedMesh);
-    });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Arm1.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = arm1; 
-        importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
-        importedMesh.rotation.x = BABYLON.Tools.ToRadians(90);
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
-        importedMeshes.push(importedMesh);
-    });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Arm2.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = arm2;
-        importedMesh.rotation.x = BABYLON.Tools.ToRadians(-90);
-        importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
-        importedMeshes.push(importedMesh);
-    });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Wrist.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = wrist;
-        importedMesh.rotation.z = BABYLON.Tools.ToRadians(-90);
-        importedMesh.position.z = 250;
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-        importedMeshes.push(importedMesh);
-    });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Hand_v2.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = hand;
-        importedMesh.rotation.x = BABYLON.Tools.ToRadians(-90);
-        importedMesh.rotation.y = BABYLON.Tools.ToRadians(-90);
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0); 
-        importedMeshes.push(importedMesh);
-    });
-    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Claw.stl", scene, function (newMeshes) {
-        var importedMesh = newMeshes[0];
-        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
-        importedMesh.parent = claw;
-        importedMesh.position.z = 75
-        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
-        importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-        importedMeshes.push(importedMesh);
-    });
+    if (showDetailedModels) {
+        BABYLON.SceneLoader.ImportMesh("", "Modelos/", "Base.stl", scene, function (newMeshes) {
+            var importedMesh = newMeshes[0];
+            importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+            importedMesh.parent = base;
+            importedMesh.rotation.x = BABYLON.Tools.ToRadians(90);
+            importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+            importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+            importedMeshes.push(importedMesh);
+        });
+        BABYLON.SceneLoader.ImportMesh("", "Modelos/", "Waist.stl", scene, function (newMeshes) {
+            var importedMesh = newMeshes[0];
+            importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+            importedMesh.parent = waist;
+            importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
+            importedMesh.rotation.z = BABYLON.Tools.ToRadians(90);
+            importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+            importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+            importedMeshes.push(importedMesh);
+        });
+        BABYLON.SceneLoader.ImportMesh("", "Modelos/", "Arm1.stl", scene, function (newMeshes) {
+            var importedMesh = newMeshes[0];
+            importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+            importedMesh.parent = arm1;
+            importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
+            importedMesh.rotation.x = BABYLON.Tools.ToRadians(90);
+            importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+            importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+            importedMeshes.push(importedMesh);
+        });
+        BABYLON.SceneLoader.ImportMesh("", "Modelos/", "Arm2.stl", scene, function (newMeshes) {
+            var importedMesh = newMeshes[0];
+            importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+            importedMesh.parent = arm2;
+            importedMesh.rotation.x = BABYLON.Tools.ToRadians(-90);
+            importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
+            importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+            importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+            importedMeshes.push(importedMesh);
+        });
+        BABYLON.SceneLoader.ImportMesh("", "Modelos/", "Wrist.stl", scene, function (newMeshes) {
+            var importedMesh = newMeshes[0];
+            importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+            importedMesh.parent = wrist;
+            importedMesh.rotation.z = BABYLON.Tools.ToRadians(-90);
+            importedMesh.position.z = 250;
+            importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+            importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+            importedMeshes.push(importedMesh);
+        });
+        BABYLON.SceneLoader.ImportMesh("", "Modelos/", "Hand_v2.stl", scene, function (newMeshes) {
+            var importedMesh = newMeshes[0];
+            importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+            importedMesh.parent = hand;
+            importedMesh.rotation.x = BABYLON.Tools.ToRadians(-90);
+            importedMesh.rotation.y = BABYLON.Tools.ToRadians(-90);
+            importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+            importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+            importedMeshes.push(importedMesh);
+        });
+        BABYLON.SceneLoader.ImportMesh("", "Modelos/", "Claw.stl", scene, function (newMeshes) {
+            var importedMesh = newMeshes[0];
+            importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+            importedMesh.parent = claw;
+            importedMesh.position.z = 75;
+            importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+            importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+            importedMeshes.push(importedMesh);
+        });
+    }
 
     // Tratamento de redimensionamento da janela
     window.addEventListener("resize", function () {
         engine.resize();
+        updateOrthographicView();
     });
 
     // Objetos auxiliares para posicionamento dos eixos
@@ -175,6 +192,30 @@ var createScene =  function () {
     var actuator = BABYLON.MeshBuilder.CreateBox("actuator", { width: 1, height: 1, depth: 1 }, scene);
     actuator.position.z = 200
     actuator.parent = claw; 
+
+    [
+        base, servoWaist, waist, servo01, arm1, servo02, arm2,
+        servo03, wrist, servo04, hand, servo05, claw, actuator
+    ].forEach(function (node) {
+        node.isVisible = false;
+    });
+
+    createSchematicRobot(scene, {
+        base: base,
+        servoWaist: servoWaist,
+        waist: waist,
+        servo01: servo01,
+        arm1: arm1,
+        servo02: servo02,
+        arm2: arm2,
+        servo03: servo03,
+        wrist: wrist,
+        servo04: servo04,
+        hand: hand,
+        servo05: servo05,
+        claw: claw,
+        actuator: actuator
+    });
 
     // Posicionamento inicial
     // Inicia a engine
@@ -245,9 +286,9 @@ var createScene =  function () {
     });
     UiPanelLeft.addControl(startStopButton);
 
-    // Inicialmente, definir visibilidade dos eixos como falsa
-    var toggleAxisButton = GUI.Button.CreateSimpleButton("toggleAxisButton", "Toggle Axes");
-    var axesVisible = false;
+    // Eixos visiveis por padrao para a vista esquematica.
+    var toggleAxisButton = GUI.Button.CreateSimpleButton("toggleAxisButton", "Ocultar eixos");
+    var axesVisible = true;
     var baseAxis = null;
     var servo01Axis = null;
     var servo02Axis = null;  
@@ -260,28 +301,39 @@ var createScene =  function () {
     toggleAxisButton.height = "40px";
     toggleAxisButton.color = "white";
     toggleAxisButton.background = "blue";
+
+    function createRobotAxes() {
+        baseAxis = showAxis(scene, base, "0", { length: 75 });
+        servo01Axis = showAxis(scene, servo01, "1", { length: 72 });
+        servo02Axis = showAxis(scene, servo02, "2", { length: 72 });
+        servo03Axis = showAxis(scene, servo03, "3", { length: 68 });
+        servo04Axis = showAxis(scene, servo04, "4", { length: 64 });
+        servo05Axis = showAxis(scene, servo05, "5", { length: 60 });
+        actuatorAxis = showAxis(scene, actuator, "6", { length: 58 });
+    }
+
+    function disposeRobotAxes() {
+        if (baseAxis) { baseAxis.dispose(); baseAxis = null; }
+        if (servo01Axis) { servo01Axis.dispose(); servo01Axis = null; }
+        if (servo02Axis) { servo02Axis.dispose(); servo02Axis = null; }
+        if (servo03Axis) { servo03Axis.dispose(); servo03Axis = null; }
+        if (servo04Axis) { servo04Axis.dispose(); servo04Axis = null; }
+        if (servo05Axis) { servo05Axis.dispose(); servo05Axis = null; }
+        if (actuatorAxis) { actuatorAxis.dispose(); actuatorAxis = null; }
+    }
+
+    createRobotAxes();
+
     toggleAxisButton.onPointerUpObservable.add(function() {
         axesVisible = !axesVisible;
         if (axesVisible) {
-            baseAxis = showAxis(scene,base);
-            servo01Axis = showAxis(scene,servo01);
-            servo02Axis = showAxis(scene,servo02);
-            servo03Axis = showAxis(scene,servo03);
-            servo04Axis = showAxis(scene,servo04);
-            servo05Axis = showAxis(scene,servo05);
-            actuatorAxis = showAxis(scene,actuator);
-        }
-        if (!axesVisible) {
-            if (baseAxis) { baseAxis.dispose(); baseAxis = null; }
-            if (servo01Axis) { servo01Axis.dispose(); servo01Axis = null; }
-            if (servo02Axis) { servo02Axis.dispose(); servo02Axis = null; }
-            if (servo03Axis) { servo03Axis.dispose(); servo03Axis = null; }
-            if (servo04Axis) { servo04Axis.dispose(); servo04Axis = null; }
-            if (servo05Axis) { servo05Axis.dispose(); servo05Axis = null; }
-            if (actuatorAxis) { actuatorAxis.dispose(); actuatorAxis = null; }
+            createRobotAxes();
+            toggleAxisButton.textBlock.text = "Ocultar eixos";
+        } else {
+            disposeRobotAxes();
+            toggleAxisButton.textBlock.text = "Mostrar eixos";
         }
     });
-    UiPanelLeft.addControl(toggleAxisButton);
 
     var pontos = [];
 
@@ -696,7 +748,7 @@ var createScene =  function () {
                 points: trajectoryPoints,
                 updatable: true
             }, scene);
-            trajectoryLine.color = new BABYLON.Color3(1, 1, 1);
+            trajectoryLine.color = new BABYLON.Color3(0.05, 0.15, 1);
             pendingSinceRebuild = 0;
             return;
         }
@@ -710,7 +762,7 @@ var createScene =  function () {
                 points: trajectoryPoints,
                 updatable: true
             }, scene);
-            trajectoryLine.color = new BABYLON.Color3(1, 1, 1);
+            trajectoryLine.color = new BABYLON.Color3(0.05, 0.15, 1);
             pendingSinceRebuild = 0;
         } else {
             // Entre recriacões, atualiza a posicao dos pontos já existentes

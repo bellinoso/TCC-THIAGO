@@ -2,7 +2,7 @@ function ajustarAngulo(angulo) {
     return ((angulo % 360) + 360) % 360;
 }
 
-// Função para criar um slider com um campo de texto
+// Funcao para criar um slider com um campo de texto
 function createSliderWithText(min, max, initialValue, onChange, labelText) {
     var container = new BABYLON.GUI.StackPanel();
     container.isVertical = true;
@@ -35,7 +35,7 @@ function createSliderWithText(min, max, initialValue, onChange, labelText) {
     });
 
     var inputText = new BABYLON.GUI.InputText();
-    inputText.width = "60px"; // Aumentando a largura da caixa de texto
+    inputText.width = "60px";
     inputText.text = initialValue.toFixed(2);
     inputText.color = "white";
     inputText.background = "gray";
@@ -66,7 +66,6 @@ var startRenderLoop = function (engine, canvas) {
 }
 
 function showAxis(scene, parent) {
-
     var axesViewer = new BABYLON.Debug.AxesViewer(scene, 100);
     if (parent) {
         axesViewer.xAxis.parent = parent;
@@ -74,24 +73,20 @@ function showAxis(scene, parent) {
         axesViewer.zAxis.parent = parent;
     }
     return axesViewer;
-
 }
 
-function toggleTransparency(importedMeshes,transparent) {
-    importedMeshes.forEach(function(mesh) {
+function toggleTransparency(importedMeshes, transparent) {
+    importedMeshes.forEach(function (mesh) {
         if (transparent) {
             mesh.material.alpha = 0.7;
-        }
-        else {
+        } else {
             mesh.material.alpha = 1;
         }
     });
 }
 
-var importedMeshes = [];
-
-function toggleModelsVisibility(importedMeshes,visible) {
-    importedMeshes.forEach(function(mesh) {
+function toggleModelsVisibility(importedMeshes, visible) {
+    importedMeshes.forEach(function (mesh) {
         mesh.isVisible = visible;
     });
 }
@@ -99,10 +94,10 @@ function toggleModelsVisibility(importedMeshes,visible) {
 function normalizeAngle(angle) {
     let normalizedAngle = BABYLON.Tools.ToDegrees(angle) % 360;
     if (normalizedAngle < 0) {
-      normalizedAngle += 360;
+        normalizedAngle += 360;
     }
     return normalizedAngle;
-  }
+}
 
 function printMatrixToDataTab(mesh) {
     const matrix = mesh.getWorldMatrix().toArray();
@@ -139,14 +134,14 @@ function printMatrixToDataTab(mesh) {
 
     const transformLegendHtml = `
         <div style="margin-top:8px;font-size:12px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-            <div><span style="display:inline-block;width:12px;height:12px;background:#dbeafe;border:1px solid #999;margin-right:4px;"></span>Rotação (R, 3x3)</div>
-            <div><span style="display:inline-block;width:12px;height:12px;background:#dcfce7;border:1px solid #999;margin-right:4px;"></span>Posição (x, y, z)</div>
+            <div><span style="display:inline-block;width:12px;height:12px;background:#dbeafe;border:1px solid #999;margin-right:4px;"></span>Rotacao (R, 3x3)</div>
+            <div><span style="display:inline-block;width:12px;height:12px;background:#dcfce7;border:1px solid #999;margin-right:4px;"></span>Posicao (x, y, z)</div>
             <div><span style="display:inline-block;width:12px;height:12px;background:#f3f4f6;border:1px solid #999;margin-right:4px;"></span>Linha homogênea</div>
             <div><span style="display:inline-block;width:12px;height:12px;background:#fef3c7;border:1px solid #999;margin-right:4px;"></span>Elemento [4,4] = 1</div>
         </div>
     `;
 
-    // Montar tabela DH (se existir a variável global DH)
+    // Montar tabela DH
     const dhParams = (typeof DH !== "undefined") ? DH : (window.DH || null);
     let dhHtml = '';
     if (dhParams && Array.isArray(dhParams)) {
@@ -187,7 +182,7 @@ function printMatrixToDataTab(mesh) {
             </div>
             <div style="flex:1;min-width:300px;">
                 <div style="padding:0px;">
-                    <b>Matriz de transformação global:</b><br><br>
+                    <b>Matriz de transformacao global:</b><br><br>
                     ${transformHtml}
                     ${transformLegendHtml}
                 </div>
@@ -195,8 +190,6 @@ function printMatrixToDataTab(mesh) {
         </div>
     `;
 }
-
-
 function inverse_kinematics(DH_params, T06, prevAngles) {
     const params = DH_params.map(r => r.slice());
     const a1 = params[0][1], a2 = params[1][1], a3 = params[2][1];
@@ -209,7 +202,7 @@ function inverse_kinematics(DH_params, T06, prevAngles) {
         T06[2][3] - d6 * T06[2][2]
     ];
 
-    // Theta1 é basicamente o arco tangente de y/x
+    // Theta1 é o arco tangente de y/x
     let theta1 = Math.atan2(pwc[1], pwc[0]);
 
     // Escolher theta1 mais próximo do anterior
@@ -250,7 +243,7 @@ function inverse_kinematics(DH_params, T06, prevAngles) {
         theta3 = theta3a;
     }
 
-    // Orientação
+    // Orientacao
     const R06 = [
         [T06[0][0], T06[0][1], T06[0][2]],
         [T06[1][0], T06[1][1], T06[1][2]],
@@ -260,7 +253,7 @@ function inverse_kinematics(DH_params, T06, prevAngles) {
     // T03 com θ1..θ3 encontrados
     let T03 = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
     const th123_deg = [BABYLON.Tools.ToDegrees(theta1), BABYLON.Tools.ToDegrees(theta2), BABYLON.Tools.ToDegrees(theta3)];
-    // Multiplica as matrizes de transformação DH para os três primeiros elos
+    // Multiplica as matrizes de transformacao DH para os três primeiros elos
     for (let i = 0; i < 3; i++) {
         const [alpha,a,d] = params[i];
         T03 = matMul4(T03, dhTransform(alpha, a, d, th123_deg[i]));
@@ -303,13 +296,6 @@ function inverse_kinematics(DH_params, T06, prevAngles) {
     const sol1 = [theta1, theta2, theta3, theta4, theta5, theta6];
     const sol2 = [theta1, theta2, theta3, theta4 + Math.PI, -theta5, theta6 + Math.PI];
 
-    // const err1 = Math.hypot(sol1[3]-prev[3], sol1[4]-prev[4], sol1[5]-prev[5]);
-    // const err2 = Math.hypot(sol2[3]-prev[3], sol2[4]-prev[4], sol2[5]-prev[5]);
-
-    // const sol = (err1 <= err2) ? sol1 : sol2;
-    // return sol;
-
-
     const sol1_adj = sol1.map((th, i) => bring_close(th, prev[i]));
     const sol2_adj = sol2.map((th, i) => bring_close(th, prev[i]));
 
@@ -328,7 +314,7 @@ function matT3(A) { // Transposta de matriz 3x3
     ];
 }
 
-function matMul3(A, B) { // Multiplicação de matrizes 3x3
+function matMul3(A, B) { // Multiplicacao de matrizes 3x3
     const R = [[0,0,0],[0,0,0],[0,0,0]];
     for (let i = 0; i < 3; i++) {
         for (let k = 0; k < 3; k++) {
@@ -340,7 +326,7 @@ function matMul3(A, B) { // Multiplicação de matrizes 3x3
     return R;
     }
 
-function matMul4(A, B) { // Multiplicação de matrizes 4x4
+function matMul4(A, B) { // Multiplicacao de matrizes 4x4
     const R = Array.from({ length: 4 }, () => [0,0,0,0]);
     for (let i = 0; i < 4; i++) {
         for (let k = 0; k < 4; k++) {
@@ -352,7 +338,7 @@ function matMul4(A, B) { // Multiplicação de matrizes 4x4
     return R;
 }
 
-// Matriz de transformação DH
+// Matriz de transformacao DH
 function dhTransform(alphaDeg, a, d, thetaDeg) { 
     const alpha = BABYLON.Tools.ToRadians(alphaDeg);
     const theta = BABYLON.Tools.ToRadians(thetaDeg);

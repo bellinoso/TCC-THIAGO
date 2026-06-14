@@ -25,21 +25,21 @@ document.getElementById('minimizeTabContent').onclick = function() {
 };
 
 function toggleCharts() {
-        var chartsZone = document.getElementById('tabContent');
-        var canvasZone = document.getElementById('canvasZone');
-        var displayStyle = window.getComputedStyle(chartsZone).display;
-    
-        if (displayStyle === 'none' || displayStyle === '') {
-            chartsZone.style.display = 'flex';
-            canvasZone.style.height = '65%'; 
-            document.getElementById('minimizeTabContent').textContent = '⧉'; // Mostrar o botão de minimizar
-        } else {
-            chartsZone.style.display = 'none';
-            canvasZone.style.height = '100%';
-            document.getElementById('minimizeTabContent').textContent = '✕'; // Mostrar o botão de minimizar
-        }
-        engine.resize();
+    var chartsZone = document.getElementById('tabContent');
+    var canvasZone = document.getElementById('canvasZone');
+    var displayStyle = window.getComputedStyle(chartsZone).display;
+
+    if (displayStyle === 'none' || displayStyle === '') {
+        chartsZone.style.display = 'flex';
+        canvasZone.style.height = '65%';
+        document.getElementById('minimizeTabContent').textContent = '⧉';
+    } else {
+        chartsZone.style.display = 'none';
+        canvasZone.style.height = '100%';
+        document.getElementById('minimizeTabContent').textContent = '✕';
     }
+    engine.resize();
+}
 
 function resizeCanvas(canvas, chart) {
     const container = canvas.parentNode;
@@ -58,7 +58,7 @@ const chartConfig = {
         labels: [],
         datasets: [
             {
-                label: 'θ1',
+                label: 'J1',
                 data: [],
                 borderColor: 'rgba(255, 0, 0, 1)',
                 borderWidth: 1,
@@ -66,7 +66,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ2',
+                label: 'J2',
                 data: [],
                 borderColor: 'rgba(0, 255, 0, 1)',
                 borderWidth: 1,
@@ -74,7 +74,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ3',
+                label: 'J3',
                 data: [],
                 borderColor: 'rgba(0, 0, 255, 1)',
                 borderWidth: 1,
@@ -82,7 +82,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ4',
+                label: 'J4',
                 data: [],
                 borderColor: 'rgba(255, 0, 255, 1)',
                 borderWidth: 1,
@@ -90,7 +90,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ5',
+                label: 'J5',
                 data: [],
                 borderColor: 'rgba(255, 170, 50, 1)',
                 borderWidth: 1,
@@ -98,7 +98,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ6',
+                label: 'J6',
                 data: [],
                 borderColor: 'rgba(0, 255, 255, 1)',
                 borderWidth: 1,
@@ -118,7 +118,7 @@ const chartConfig = {
                     pointStyle: 'line',
                     borderWidth: 6,
                     font: {
-                        size: 16,      // legenda
+                        size: 16,
                         family: 'Arial',
                         weight: '300'
                     }
@@ -128,7 +128,7 @@ const chartConfig = {
                 display: true,
                 text: '',
                 font: {
-                    size: 15,          // título do gráfico
+                    size: 15,
                     family: 'Arial',
                     weight: '400'
                 }
@@ -140,7 +140,7 @@ const chartConfig = {
                 position: 'bottom',
                 ticks: {
                     font: {
-                        size: 14,      // números do eixo X
+                        size: 14,
                         family: 'Arial'
                     }
                 },
@@ -148,7 +148,7 @@ const chartConfig = {
                     display: true,
                     text: '',
                     font: {
-                        size: 13,      // título do eixo X (se usar)
+                        size: 13,
                         family: 'Arial',
                         weight: '400'
                     }
@@ -157,7 +157,7 @@ const chartConfig = {
             y: {
                 ticks: {
                     font: {
-                        size: 14,      // números do eixo Y
+                        size: 14,
                         family: 'Arial'
                     }
                 },
@@ -165,7 +165,7 @@ const chartConfig = {
                     display: true,
                     text: '',
                     font: {
-                        size: 17,      // título do eixo Y
+                        size: 17,
                         family: 'Arial',
                         weight: '300'
                     }
@@ -179,9 +179,8 @@ const ctx1 = document.getElementById('gPos').getContext('2d');
 const ctx2 = document.getElementById('gVel').getContext('2d');
 const ctx3 = document.getElementById('gAce').getContext('2d');
 
-// Criação dos gráficos com títulos diferentes
 const chartConfig1 = JSON.parse(JSON.stringify(chartConfig));
-chartConfig1.options.plugins.title.text = 'Posição';
+chartConfig1.options.plugins.title.text = 'Posicao';
 chartConfig1.options.scales.y.title.text = 'p [ deg ]';
 const chart1 = new Chart(ctx1, chartConfig1);
 
@@ -191,11 +190,10 @@ chartConfig2.options.scales.y.title.text = 'v [ deg / s ]';
 const chart2 = new Chart(ctx2, chartConfig2);
 
 const chartConfig3 = JSON.parse(JSON.stringify(chartConfig));
-chartConfig3.options.plugins.title.text = 'Aceleração';
+chartConfig3.options.plugins.title.text = 'Aceleracao';
 chartConfig3.options.scales.y.title.text = 'a [ deg / s^2 ]';
 const chart3 = new Chart(ctx3, chartConfig3);
 
-// Redimensionar os canvas ao carregar e quando a janela é redimensionada
 function resizeCharts() {
     resizeCanvas(ctx1.canvas, chart1);
     resizeCanvas(ctx2.canvas, chart2);
@@ -205,7 +203,6 @@ function resizeCharts() {
 window.addEventListener('resize', resizeCharts);
 window.addEventListener('load', resizeCharts);
 
-// Função para adicionar dados aos gráficos
 function addData(chart, label, data1, data2, data3, data4, data5, data6) {
     chart.data.labels.push(label);
     chart.data.datasets[0].data.push(data1);

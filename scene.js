@@ -235,12 +235,8 @@ var createScene =  function () {
     startStopButton.onPointerUpObservable.add(function () {
         if (isRoutineRunning) {
             stopRoutine();
-            startStopButton.textBlock.text = "Start Program";
-            startStopButton.background = "green";
-        } else if (pontos.length > 1) {
+        } else {
             startRoutine();
-            startStopButton.textBlock.text = "Stop Program";
-            startStopButton.background = "red";
         }
     });
     UiPanelLeft.addControl(startStopButton);
@@ -284,6 +280,295 @@ var createScene =  function () {
     UiPanelLeft.addControl(toggleAxisButton);
 
     var pontos = [];
+    const programJoints = [
+        { key: "waist", label: "θ1", min: 0, max: 360 },
+        { key: "arm1", label: "θ2", min: 0, max: 180 },
+        { key: "arm2", label: "θ3", min: -240, max: 61 },
+        { key: "wrist", label: "θ4", min: 0, max: 360 },
+        { key: "hand", label: "θ5", min: -90, max: 90 },
+        { key: "claw", label: "θ6", min: 0, max: 360 }
+    ];
+    const programJointKeys = programJoints.map(joint => joint.key);
+    let selectedProgramJoint = programJoints[0].key;
+    let selectedProgramPointIndex = null;
+    const programJointSelector = document.getElementById("programJointSelector");
+    const programTableContainer = document.getElementById("programTableContainer");
+    const programStatus = document.getElementById("programStatus");
+
+    function createJointValues(initialValue) {
+        return programJointKeys.reduce((values, joint) => {
+            values[joint] = initialValue;
+            return values;
+        }, {});
+    }
+
+    function setProgramStatus(message = "", isError = false) {
+        programStatus.textContent = message;
+        programStatus.classList.toggle("error", isError);
+    }
+
+    function getVelocitySourceLabel(source) {
+        if (source === "manual") return "manual";
+        if (source === "suggested") return "sugerida";
+        return "padrão";
+    }
+
+    function formatProgramNumber(value, decimals = 3) {
+        return Number.isFinite(value) ? value.toFixed(decimals) : "";
+    }
+
+    function formatProgramTimeSeconds(value) {
+        return Number.isFinite(value) ? value.toFixed(0) : "";
+    }
+
+    function renderProgramTable() {
+        const selectedJointConfig = programJoints.find(joint => joint.key === selectedProgramJoint);
+        const selectorButtons = programJointSelector.querySelectorAll("button[data-joint]");
+        selectorButtons.forEach(button => {
+            button.classList.toggle("active", button.dataset.joint === selectedProgramJoint);
+            button.disabled = Boolean(isRoutineRunning);
+        });
+
+        if (pontos.length === 0) {
+            programTableContainer.innerHTML = `
+                <div class="programming-empty">
+                    Adicione pontos ao programa para editar posições, velocidades e tempos.
+                </div>
+            `;
+            return;
+        }
+
+        let cumulativeTime = 0;
+        let cumulativeTimeIsValid = true;
+        const rows = pontos.map((point, index) => {
+            const durationIsValid = index === 0 || (Number.isFinite(point.deltaT) && point.deltaT > 0);
+            if (index > 0 && durationIsValid && cumulativeTimeIsValid) {
+                cumulativeTime += point.deltaT;
+            } else if (!durationIsValid) {
+                cumulativeTimeIsValid = false;
+            }
+
+            const positionDeg = BABYLON.Tools.ToDegrees(point[selectedProgramJoint]);
+            const velocityDeg = BABYLON.Tools.ToDegrees(point.velocities[selectedProgramJoint]);
+            const selectedClass = index === selectedProgramPointIndex ? "selected" : "";
+            const disabled = isRoutineRunning ? "disabled" : "";
+            const durationField = index === 0
+                ? `<input type="text" value="—" disabled aria-label="Ponto inicial sem duração anterior">`
+                : `<input class="${durationIsValid ? "" : "invalid"}" type="number" min="1" step="1" value="${formatProgramTimeSeconds(point.deltaT)}" data-field="duration" data-point-index="${index}" ${disabled}>`;
+            const cumulativeDisplay = cumulativeTimeIsValid ? formatProgramTimeSeconds(cumulativeTime) : "—";
+
+            return `
+                <tr class="${selectedClass}" data-point-index="${index}">
+                    <td><strong>P${index + 1}</strong></td>
+                    <td>${durationField}</td>
+                    <td>${cumulativeDisplay}</td>
+                    <td>
+                        <input type="number" min="${selectedJointConfig.min}" max="${selectedJointConfig.max}" step="0.1"
+                            value="${formatProgramNumber(positionDeg)}" data-field="position" data-point-index="${index}" ${disabled}>
+                    </td>
+                    <td>
+                        <div class="velocity-field">
+                            <input type="number" step="0.1" value="${formatProgramNumber(velocityDeg)}"
+                                data-field="velocity" data-point-index="${index}" ${disabled}>
+                            <span class="velocity-source">${getVelocitySourceLabel(point.velocitySources[selectedProgramJoint])}</span>
+                            <button type="button" class="use-suggested-velocity"
+                                data-action="use-suggested-velocity" data-point-index="${index}"
+                                aria-label="Usar velocidade sugerida para P${index + 1}" ${disabled}>Usar sugestão</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+
+        programTableContainer.innerHTML = `
+            <table class="programming-table">
+                <thead>
+                    <tr>
+                        <th>Ponto</th>
+                        <th>Δt anterior [s]</th>
+                        <th>Tempo acumulado [s]</th>
+                        <th>${selectedJointConfig.label} posição [grau]</th>
+                        <th>${selectedJointConfig.label} velocidade [grau/s]</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        `;
+    }
+
+    function updateProgramSelectionStyles() {
+        programTableContainer.querySelectorAll("tr[data-point-index]").forEach(row => {
+            row.classList.toggle(
+                "selected",
+                Number.parseInt(row.dataset.pointIndex, 10) === selectedProgramPointIndex
+            );
+        });
+
+        pontos.forEach((point, index) => {
+            if (!point.indicador || point.indicador.isDisposed()) return;
+            const isSelected = index === selectedProgramPointIndex;
+            point.indicador.scaling.setAll(isSelected ? 1.35 : 1);
+            point.indicador.material.diffuseColor = isSelected
+                ? new BABYLON.Color3(1, 0.75, 0)
+                : new BABYLON.Color3(1, 0, 0);
+        });
+    }
+
+    function forceRobotWorldMatrices() {
+        [base, waist, arm1, arm2, wrist, hand, claw, actuator].forEach(mesh => {
+            mesh.computeWorldMatrix(true);
+        });
+    }
+
+    function refreshPointCartesianPosition(point) {
+        forceRobotWorldMatrices();
+        const position = actuator.getAbsolutePosition();
+        point.x = position.x;
+        point.y = position.y;
+        point.z = position.z;
+        point.indicador.position.copyFrom(position);
+    }
+
+    function selectProgramPoint(index) {
+        if (isRoutineRunning || index < 0 || index >= pontos.length) return;
+        selectedProgramPointIndex = index;
+        setPositionFromPoint(pontos[index]);
+        forceRobotWorldMatrices();
+        updateSliders();
+        printMatrixToDataTab(actuator);
+        updateProgramSelectionStyles();
+    }
+
+    function handleProgramInputChange(event) {
+        const input = event.target.closest("input[data-field][data-point-index]");
+        if (!input || isRoutineRunning) return;
+
+        const pointIndex = Number.parseInt(input.dataset.pointIndex, 10);
+        const point = pontos[pointIndex];
+        const value = Number.parseFloat(input.value);
+        const jointConfig = programJoints.find(joint => joint.key === selectedProgramJoint);
+        selectProgramPoint(pointIndex);
+
+        if (input.dataset.field === "duration") {
+            if (!Number.isFinite(value) || value <= 0) {
+                input.classList.add("invalid");
+                setProgramStatus("A duração deve ser maior que zero.", true);
+                return;
+            }
+            point.deltaT = value;
+        } else if (input.dataset.field === "position") {
+            if (!Number.isFinite(value) || value < jointConfig.min || value > jointConfig.max) {
+                input.classList.add("invalid");
+                setProgramStatus(`A posição de ${jointConfig.label} deve estar entre ${jointConfig.min}° e ${jointConfig.max}°.`, true);
+                return;
+            }
+            point[selectedProgramJoint] = BABYLON.Tools.ToRadians(value);
+            setPositionFromPoint(point);
+            refreshPointCartesianPosition(point);
+            updateSliders();
+            printMatrixToDataTab(actuator);
+        } else if (input.dataset.field === "velocity") {
+            if (!Number.isFinite(value)) {
+                input.classList.add("invalid");
+                setProgramStatus("A velocidade deve ser um número finito.", true);
+                return;
+            }
+            point.velocities[selectedProgramJoint] = BABYLON.Tools.ToRadians(value);
+            point.velocitySources[selectedProgramJoint] = "manual";
+        }
+
+        setProgramStatus("Alteração salva.");
+        renderProgramTable();
+        updateProgramSelectionStyles();
+    }
+
+    function initializeProgrammingUI() {
+        programJointSelector.innerHTML = programJoints.map(joint => `
+            <button type="button" class="joint-selector-button" data-joint="${joint.key}">${joint.label}</button>
+        `).join("");
+
+        programJointSelector.addEventListener("click", event => {
+            const button = event.target.closest("button[data-joint]");
+            if (!button || isRoutineRunning) return;
+            selectedProgramJoint = button.dataset.joint;
+            setProgramStatus();
+            renderProgramTable();
+            updateProgramSelectionStyles();
+        });
+
+        programTableContainer.addEventListener("focusin", event => {
+            const input = event.target.closest("input[data-point-index]");
+            if (input) selectProgramPoint(Number.parseInt(input.dataset.pointIndex, 10));
+        });
+        programTableContainer.addEventListener("click", event => {
+            const suggestionButton = event.target.closest('button[data-action="use-suggested-velocity"]');
+            if (suggestionButton) {
+                if (isRoutineRunning) return;
+
+                const pointIndex = Number.parseInt(suggestionButton.dataset.pointIndex, 10);
+                selectProgramPoint(pointIndex);
+
+                try {
+                    pontos[pointIndex].velocities[selectedProgramJoint] = calculateSuggestedVelocity(
+                        pointIndex,
+                        selectedProgramJoint
+                    );
+                    pontos[pointIndex].velocitySources[selectedProgramJoint] = "suggested";
+                    setProgramStatus(`Velocidade sugerida aplicada a P${pointIndex + 1}.`);
+                    renderProgramTable();
+                    updateProgramSelectionStyles();
+                } catch (error) {
+                    setProgramStatus(error.message, true);
+                }
+                return;
+            }
+
+            const row = event.target.closest("tr[data-point-index]");
+            if (row) selectProgramPoint(Number.parseInt(row.dataset.pointIndex, 10));
+        });
+        programTableContainer.addEventListener("keydown", event => {
+            if (event.key !== "Enter") return;
+            const input = event.target.closest("input[data-field][data-point-index]");
+            if (!input) return;
+            event.preventDefault();
+            handleProgramInputChange(event);
+        });
+        programTableContainer.addEventListener("change", handleProgramInputChange);
+        renderProgramTable();
+    }
+
+    function calculateSuggestedVelocity(pointIndex, joint) {
+        if (pointIndex === 0 || pointIndex === pontos.length - 1) return 0;
+
+        const previousPoint = pontos[pointIndex - 1];
+        const currentPoint = pontos[pointIndex];
+        const nextPoint = pontos[pointIndex + 1];
+
+        if (!(currentPoint.deltaT > 0) || !(nextPoint.deltaT > 0)) {
+            throw new RangeError("As durações vizinhas devem ser maiores que zero.");
+        }
+
+        return TrajectoryMath.suggestIntermediateVelocity(
+            previousPoint[joint],
+            currentPoint[joint],
+            nextPoint[joint],
+            currentPoint.deltaT,
+            nextPoint.deltaT
+        );
+    }
+
+    function suggestPreviousPointVelocities() {
+        if (pontos.length < 3) return;
+
+        const currentIndex = pontos.length - 2;
+        const currentPoint = pontos[currentIndex];
+
+        programJointKeys.forEach(joint => {
+            if (currentPoint.velocitySources[joint] === "manual") return;
+            currentPoint.velocities[joint] = calculateSuggestedVelocity(currentIndex, joint);
+            currentPoint.velocitySources[joint] = "suggested";
+        });
+    }
 
     function adicionarPonto() {
         const ponto = {
@@ -297,7 +582,9 @@ var createScene =  function () {
             y: actuator.getAbsolutePosition().y,
             z: actuator.getAbsolutePosition().z,
             indicador : BABYLON.MeshBuilder.CreateSphere("pontoEsfera", { diameter: 15 }, scene),
-            deltaT: currentFrame
+            deltaT: pontos.length === 0 ? 0 : currentFrame,
+            velocities: createJointValues(0),
+            velocitySources: createJointValues("default")
         };
 
         ponto.indicador.position = new BABYLON.Vector3(ponto.x, ponto.y, ponto.z);
@@ -306,8 +593,13 @@ var createScene =  function () {
         ponto.indicador.material = mat;
         
         pontos.push(ponto);
-
+        suggestPreviousPointVelocities();
+        selectedProgramPointIndex = pontos.length - 1;
+        renderProgramTable();
+        updateProgramSelectionStyles();
     }
+
+    initializeProgrammingUI();
 
     var addPointButton = GUI.Button.CreateSimpleButton("addPointButton", "Add Point");
     addPointButton.paddingTop = "10px";
@@ -316,7 +608,7 @@ var createScene =  function () {
     addPointButton.color = "white";
     addPointButton.background = "blue";
     addPointButton.onPointerUpObservable.add(function() {
-        adicionarPonto();
+        if (!isRoutineRunning) adicionarPonto();
     });
     UiPanelLeft.addControl(addPointButton);
 
@@ -388,7 +680,7 @@ var createScene =  function () {
 
     UiPanelLeft.addControl(frameControlContainer);
     function updateFrameControlsState() {
-        const disabled = pontos.length === 0;
+        const disabled = pontos.length === 0 || isRoutineRunning;
         frameControlContainer.isEnabled = !disabled;
         leftArrowButton.isEnabled = !disabled;
         rightArrowButton.isEnabled = !disabled;
@@ -411,6 +703,7 @@ var createScene =  function () {
             }
         });
         pontos = [];
+        selectedProgramPointIndex = null;
 
         // opcional: limpar a trajetória caso exista
         if (typeof clearTrajectory === "function") {
@@ -419,6 +712,8 @@ var createScene =  function () {
 
         // atualizar estado dos controles dependentes de pontos
         updateFrameControlsState();
+        setProgramStatus();
+        renderProgramTable();
     }
 
     // Botao para limpar pontos
@@ -429,7 +724,7 @@ var createScene =  function () {
     clearPointsButton.color = "white";
     clearPointsButton.background = "red";
     clearPointsButton.onPointerUpObservable.add(function () {
-        clearPontos();
+        if (!isRoutineRunning) clearPontos();
     });
     UiPanelLeft.addControl(clearPointsButton);
 
@@ -723,175 +1018,169 @@ var createScene =  function () {
     }
 
 
-    var isRoutineRunning = false;   
+    var isRoutineRunning = false;
+
+    function updateRoutineControlsState() {
+        startStopButton.textBlock.text = isRoutineRunning ? "Stop Program" : "Start Program";
+        startStopButton.background = isRoutineRunning ? "red" : "green";
+        addPointButton.isEnabled = !isRoutineRunning;
+        clearPointsButton.isEnabled = !isRoutineRunning;
+        addPointButton.background = isRoutineRunning ? "gray" : "blue";
+        clearPointsButton.background = isRoutineRunning ? "gray" : "red";
+        updateFrameControlsState();
+        renderProgramTable();
+        updateProgramSelectionStyles();
+    }
+
+    function openProgrammingTab() {
+        const button = document.querySelector('.tabButton[data-tab="programming"]');
+        if (button) button.click();
+    }
+
+    function validateRoutine() {
+        if (!Array.isArray(pontos) || pontos.length < 2) {
+            return "Adicione pelo menos dois pontos para executar o programa.";
+        }
+
+        for (let index = 1; index < pontos.length; index++) {
+            if (!Number.isFinite(pontos[index].deltaT) || pontos[index].deltaT <= 0) {
+                selectedProgramPointIndex = index;
+                return `A duração anterior de P${index + 1} deve ser maior que zero.`;
+            }
+        }
+
+        for (let index = 0; index < pontos.length; index++) {
+            for (const joint of programJointKeys) {
+                if (!Number.isFinite(pontos[index][joint]) || !Number.isFinite(pontos[index].velocities[joint])) {
+                    selectedProgramPointIndex = index;
+                    return `P${index + 1} possui uma posição ou velocidade inválida.`;
+                }
+            }
+        }
+
+        return null;
+    }
 
     function startRoutine() {
-        if (!isRoutineRunning) {
-            if (pontos.length === 0) {
-                console.log("Nenhum ponto adicionado para executar a rotina.");
-                return;
-            }
-            isRoutineRunning = true;
-            clearAllCharts();
+        if (isRoutineRunning) return;
 
-            // limpar trajeto e adicionar ponto inicial do atuador
-            clearTrajectory();
-            setPositionFromPoint(pontos[0]);
-            addTrajectoryPoint(new BABYLON.Vector3(pontos[0].x, pontos[0].y, pontos[0].z));
-
-            performRoutine(pontos);
+        const validationError = validateRoutine();
+        if (validationError) {
+            setProgramStatus(validationError, true);
+            renderProgramTable();
+            updateProgramSelectionStyles();
+            openProgrammingTab();
+            return;
         }
+
+        setProgramStatus();
+        isRoutineRunning = true;
+        updateRoutineControlsState();
+        clearAllCharts();
+
+        clearTrajectory();
+        setPositionFromPoint(pontos[0]);
+        forceRobotWorldMatrices();
+        addTrajectoryPoint(actuator.getAbsolutePosition().clone());
+
+        performRoutine(pontos);
     }
 
     function stopRoutine() {
         isRoutineRunning = false;
+        updateRoutineControlsState();
     }
 
-    async function performRoutine(pontos) {
-        if (!Array.isArray(pontos) || pontos.length < 2) {
-            isRoutineRunning = false;
-            if (typeof startStopButton !== "undefined" && startStopButton) {
-                startStopButton.textBlock.text = "Start Program";
-                startStopButton.background = "green";
-            }
-            return;
-        }
-
-        // tempo acumulado da rotina em ms — usado para que os gráficos usem tempo contínuo
+    async function performRoutine(routinePoints) {
         let totalTimeMs = 0;
 
-        for (let i = 0; i + 1 < pontos.length && isRoutineRunning; i++) {
-            const durationMs = pontos[i + 1].deltaT * 1000;
-            await movePointToPoint(pontos[i], pontos[i + 1], durationMs, totalTimeMs);
-            totalTimeMs += durationMs;
+        for (let i = 0; i + 1 < routinePoints.length && isRoutineRunning; i++) {
+            const durationMs = routinePoints[i + 1].deltaT * 1000;
+            await movePointToPoint(routinePoints[i], routinePoints[i + 1], durationMs, totalTimeMs);
+            if (isRoutineRunning) totalTimeMs += durationMs;
         }
 
-        // ao terminar, marcar rotina como parada e atualizar o botao
         isRoutineRunning = false;
-        if (typeof startStopButton !== "undefined" && startStopButton) {
-            startStopButton.textBlock.text = "Start Program";
-            startStopButton.background = "green";
-        }
+        updateRoutineControlsState();
     }
 
-    // Move suavemente de startPoint para endPoint em "durationMs" milissegundos usando um polinômio cúbico
-    // Condicões: velocidade inicial e final = 0
-    // tOffsetMs: deslocamento de tempo (em ms) para manter os labels dos gráficos contínuo
+    // Move entre dois pontos usando um polinômio cúbico com posições e velocidades de contorno.
     function movePointToPoint(startPoint, endPoint, durationMs, tOffsetMs = 0) {
         return new Promise((resolve) => {
-            const joints = ["waist", "arm1", "arm2", "wrist", "hand", "claw"];
-            const T = durationMs / 1000; // converter para segundos
-            // calcular coeficientes a0..a3 para cada junta
-            const coeffs = {};
-            joints.forEach((j) => {
-                const q0 = startPoint[j];
-                const qf = endPoint[j];
-                const d = qf - q0;
-                const a0 = q0;
-                const a1 = 0;
-                const a2 = 3 * d / (T * T);
-                const a3 = -2 * d / (T * T * T);
-                coeffs[j] = { a0, a1, a2, a3 };
+            const durationSeconds = durationMs / 1000;
+            const coefficients = {};
+            programJointKeys.forEach(joint => {
+                coefficients[joint] = TrajectoryMath.calculateCubicCoefficients(
+                    startPoint[joint],
+                    endPoint[joint],
+                    startPoint.velocities[joint],
+                    endPoint.velocities[joint],
+                    durationSeconds
+                );
             });
 
             let startTime = null;
             let rafId = null;
 
-            function step(ts) {
-                if (!startTime) startTime = ts;
-                const elapsedMs = ts - startTime;
+            function applyJointState(joint, position) {
+                switch (joint) {
+                    case "waist": waist.rotation.z = position; break;
+                    case "arm1":  arm1.rotation.z = position; break;
+                    case "arm2":  arm2.rotation.z = position; break;
+                    case "wrist": wrist.rotation.z = position; break;
+                    case "hand":  hand.rotation.z = position; break;
+                    case "claw":  claw.rotation.z = position; break;
+                }
+            }
+
+            function step(timestamp) {
+                if (startTime === null) startTime = timestamp;
+                const elapsedMs = timestamp - startTime;
                 const clampedMs = Math.min(elapsedMs, durationMs);
-                const tSec = clampedMs / 1000; // tempo em segundos, limitado a T
+                const localTime = clampedMs / 1000;
+                const jointStates = {};
 
-                // atualizar juntas por polinômio cúbico
-                joints.forEach((j) => {
-                    const { a0, a1, a2, a3 } = coeffs[j];
-                    // theta(t) = a0 + a1 t + a2 t^2 + a3 t^3
-                    const theta = a0 + a1 * tSec + a2 * tSec * tSec + a3 * tSec * tSec * tSec;
-
-                    // aplicar ao mesh
-                    switch (j) {
-                        case "waist": waist.rotation.z = theta; break;
-                        case "arm1":  arm1.rotation.z  = theta; break;
-                        case "arm2":  arm2.rotation.z  = theta; break;
-                        case "wrist": wrist.rotation.z = theta; break;
-                        case "hand":  hand.rotation.z  = theta; break;
-                        case "claw":  claw.rotation.z  = theta; break;
-                    }
+                programJointKeys.forEach(joint => {
+                    const state = TrajectoryMath.evaluateCubic(coefficients[joint], localTime);
+                    jointStates[joint] = state;
+                    applyJointState(joint, state.position);
                 });
 
-                // Atualizar sliders e prints
                 updateSliders();
                 printMatrixToDataTab(actuator);
+                forceRobotWorldMatrices();
+                addTrajectoryPoint(actuator.getAbsolutePosition().clone());
 
-                // Registrar ponto do atuador e atualizar linha do trajeto
-                // Usa posicao absoluta atual do "actuator"
-                const tipPos = actuator.getAbsolutePosition().clone();
-                addTrajectoryPoint(tipPos);
-
-                // --- gráficos (pos, vel, acc) ---
-                const velDeg = [];
-                const accDeg = [];
-                joints.forEach((j) => {
-                    const { a1, a2, a3 } = coeffs[j];
-                    const thetaDot = a1 + 2 * a2 * tSec + 3 * a3 * tSec * tSec;
-                    const thetaDDot = 2 * a2 + 6 * a3 * tSec;
-                    velDeg.push(BABYLON.Tools.ToDegrees(thetaDot));
-                    accDeg.push(BABYLON.Tools.ToDegrees(thetaDDot));
-                });
-
-                // Adicionar dados aos charts (usa tempo total: tOffsetMs + elapsedMs)
                 if (typeof addData === "function" && typeof chart1 !== "undefined") {
-                    const totalLabel = ((tOffsetMs + elapsedMs) / 1000).toFixed(2);
-                    // posicões (graus)
-                    addData(chart1, totalLabel,
-                        BABYLON.Tools.ToDegrees(waist.rotation.z),
-                        BABYLON.Tools.ToDegrees(arm1.rotation.z),
-                        BABYLON.Tools.ToDegrees(arm2.rotation.z),
-                        BABYLON.Tools.ToDegrees(wrist.rotation.z),
-                        BABYLON.Tools.ToDegrees(hand.rotation.z),
-                        BABYLON.Tools.ToDegrees(claw.rotation.z)
-                    );
-                    // velocidades (graus/s) -> chart2
-                    addData(chart2, totalLabel,
-                        velDeg[0], velDeg[1], velDeg[2], velDeg[3], velDeg[4], velDeg[5]
-                    );
-                    // aceleracões (graus/s²) -> chart3
-                    addData(chart3, totalLabel,
-                        accDeg[0], accDeg[1], accDeg[2], accDeg[3], accDeg[4], accDeg[5]
-                    );
+                    const totalLabel = ((tOffsetMs + clampedMs) / 1000).toFixed(3);
+                    const positionsDeg = programJointKeys.map(joint => BABYLON.Tools.ToDegrees(jointStates[joint].position));
+                    const velocitiesDeg = programJointKeys.map(joint => BABYLON.Tools.ToDegrees(jointStates[joint].velocity));
+                    const accelerationsDeg = programJointKeys.map(joint => BABYLON.Tools.ToDegrees(jointStates[joint].acceleration));
+
+                    addData(chart1, totalLabel, ...positionsDeg);
+                    addData(chart2, totalLabel, ...velocitiesDeg);
+                    addData(chart3, totalLabel, ...accelerationsDeg);
                 }
 
-                // terminar ou continuar
-                if (elapsedMs >= durationMs || !isRoutineRunning) {
-                    // garantir estado final exatamente igual ao endPoint
+                if (elapsedMs >= durationMs) {
                     setPositionFromPoint(endPoint);
+                    forceRobotWorldMatrices();
                     updateSliders();
-
-                    // garantir que o ponto final também esteja no trajeto
                     addTrajectoryPoint(actuator.getAbsolutePosition().clone());
-
-                    if (typeof addData === "function" && typeof chart1 !== "undefined") {
-                        const totalLabel = ((tOffsetMs + durationMs) / 1000).toFixed(2);
-                        addData(chart1, totalLabel,
-                            BABYLON.Tools.ToDegrees(endPoint.waist),
-                            BABYLON.Tools.ToDegrees(endPoint.arm1),
-                            BABYLON.Tools.ToDegrees(endPoint.arm2),
-                            BABYLON.Tools.ToDegrees(endPoint.wrist),
-                            BABYLON.Tools.ToDegrees(endPoint.hand),
-                            BABYLON.Tools.ToDegrees(endPoint.claw)
-                        );
-                        addData(chart2, totalLabel, 0, 0, 0, 0, 0, 0);
-                        addData(chart3, totalLabel, 0, 0, 0, 0, 0, 0);
-                    }
                     if (rafId) cancelAnimationFrame(rafId);
                     resolve();
                     return;
                 }
+
+                if (!isRoutineRunning) {
+                    if (rafId) cancelAnimationFrame(rafId);
+                    resolve();
+                    return;
+                }
+
                 rafId = requestAnimationFrame(step);
             }
 
-            // iniciar loop
             rafId = requestAnimationFrame(step);
         });
     }

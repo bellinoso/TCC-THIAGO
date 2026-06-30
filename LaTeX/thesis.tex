@@ -1,12 +1,14 @@
 \documentclass[grad,pdftex]{poli}
 \usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
 \usepackage{amsmath,amssymb}
 \usepackage{indentfirst}
 \usepackage{graphicx}
 \usepackage{appendix}
-%\usepackage[colorinlistoftodos]{todonotes}
+\setlength{\marginparwidth}{2cm}
 \usepackage{listings}
-\usepackage{color}
+\usepackage{xcolor}
 \usepackage{subcaption}
 \usepackage{float}
 \usepackage{animate}
@@ -37,20 +39,19 @@
 \makeloabbreviations
 
 \begin{document}
-  \title{Titulo da Tese}
-  \foreigntitle{Solution of Generalized Eigensystems with Algorithms Based on
-  Arnoldi Methods}
-  \author{Estudante}{Dedicado}
-  \advisor{Prof.}{Professor}{Dorminhoco}{D.Sc.}
-  \coadvisor{Prof.}{Professor}{Atarefado}{Dr.-Ing.}
-  \examiner{Prof.}{}{D.Sc.}
-  \examiner{Prof.}{}{Ph.D.}
-  \examiner{Prof.}{}{D.Sc.}
+  \title{Desenvolvimento de um Simulador \textit{web} para Análise Cinemática de Manipuladores Robóticos de Seis Graus de Liberdade}
+  \foreigntitle{Development of a Web-Based Simulator for Kinematic Analysis of Six-Degree-of-Freedom Robotic Manipulators}
+  \author{Thiago}{Bellini de Almeida Soares}
+  \advisor{Prof.}{Vitor}{Ferreira Romano}{AAA}
+  \coadvisor{Prof.}{}{}{AAA}
+  \examiner{Prof.}{}{AAA}
+  \examiner{Prof.}{}{AAA}
+  \examiner{Prof.}{}{AAA}
   \department{DEM}
-  \date{10}{2021}
-  \keyword{Redes Neurais}
-  \keyword{Mecânica dos Fluidos}
-  \keyword{Darcy}
+  \date{03}{2026}
+  \keyword{Robótica}
+  \keyword{Denavit–Hartenberg}
+  \keyword{Cinemática}
   \maketitle
 
   \frontmatter
@@ -65,16 +66,16 @@
   \printloabbreviations
 
   \mainmatter
-  \include{Textual/chap01}
-  \include{Textual/chap02}
-  \include{Textual/chap03}
-  \include{Textual/chap04}
-  \include{Textual/chap05}
+  \include{Textual/1_introducao}
+  \include{Textual/2_Fundamentacao_teorica}
+  \include{Textual/3_Metodologia}
+  \include{Textual/4_Resultados}
+  \include{Textual/5_Conclusao}
 
   \backmatter
   \nocite{*}
   \bibliographystyle{poli-unsrt}
   \bibliography{thesis}
   \appendix
-  \include{Pos-textual/appenA}
+%  \include{Pos-textual/appenA}
 \end{document}

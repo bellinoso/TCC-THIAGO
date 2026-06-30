@@ -1,0 +1,166 @@
+\chapter{Fundamentação teórica}
+O desenvolvimento de um sistema para modelagem e visualização de um manipulador robótico exige uma base matemática que permita descrever formalmente sua estrutura geométrica e seu comportamento cinemático, estabelecendo de maneira consistente a relação entre o espaço das juntas e o espaço cartesiano. Este capítulo apresenta os fundamentos teóricos que sustentam o modelo adotado e dão suporte às decisões de implementação descritas posteriormente.
+\section{Manipuladores Robóticos}
+% Definição e classificação (serial/paralelo), graus de liberdade, elos e juntas, espaço de trabalho,
+% aplicações típicas, métricas (repetibilidade/precisão) e exemplos.
+
+Um manipulador robótico é um sistema mecânico articulado projetado para posicionar e orientar um efetuador no espaço tridimensional por meio do controle coordenado de múltiplos graus de liberdade. No contexto da automação industrial, robôs são amplamente empregados em tarefas como soldagem, montagem, pintura, usinagem, inspeção e movimentação de materiais, devido à sua capacidade de executar movimentos repetitivos com elevada precisão e confiabilidade.
+
+Segundo a norma ISO 8372:2012, um robô industrial é definido como uma máquina manipuladora automaticamente controlada, reprogramável e multifuncional, com três ou mais eixos programáveis, podendo ter base fixa ou móvel, destinada a aplicações de automação industrial \cite{romano2024}. Essa definição enfatiza três características fundamentais: reprogramabilidade, controle automático e multiplicidade de graus de liberdade.
+
+Do ponto de vista estrutural, um manipulador é composto por uma cadeia cinemática aberta formada por elos rígidos interconectados por juntas. O primeiro elo é denominado base, geralmente fixo ao solo ou à estrutura de suporte, enquanto o último elo sustenta o efetuador final, responsável pela interação com o ambiente. 
+
+As juntas podem ser classificadas principalmente como junta de rotação (revolução) ou junta prismática  (translação). Cada junta introduz uma variável independente de posição. O número total dessas variáveis define os graus de liberdade do manipulador. Em uma cadeia cinemática aberta típica, o número de juntas coincide com o número de graus de liberdade do sistema \cite{romano2024}.
+
+
+Matematicamente, o estado geométrico de um manipulador pode ser descrito por dois espaços distintos:
+
+\begin{itemize}
+    \item \textbf{Espaço de juntas (espaço articular)}: definido pelo vetor de coordenadas generalizadas
+    \begin{equation}
+        \mathbf{q} = [q_1, q_2, \dots, q_n]^T
+    \end{equation}
+    onde cada $q_i$ representa a variável associada à junta $i$;
+
+    \item \textbf{Espaço cartesiano (ou operacional)}: definido pela posição e orientação do efetuador final em relação a um sistema de coordenadas inercial.
+\end{itemize}
+
+A relação entre esses dois espaços constitui o problema central da cinemática de manipuladores. A determinação da pose (posição e orientação) do efetuador a partir das variáveis articulares caracteriza a \textbf{Cinemática Direta}, enquanto o processo inverso define a \textbf{Cinemática Inversa}.
+
+Para manipuladores industriais de seis graus de liberdade, como os amplamente empregados em aplicações de manufatura, é possível posicionar e orientar rigidamente o efetuador no espaço tridimensional, uma vez que seis parâmetros independentes são necessários para descrever completamente a pose de um corpo rígido (três parâmetros de posição e três de orientação).
+
+No presente trabalho, considera-se um manipulador serial de seis graus de liberdade modelado como uma cadeia cinemática aberta composta exclusivamente por juntas de rotação. Essa configuração é particularmente adequada para a aplicação da Convenção de Denavit--Hartenberg e para a implementação computacional da modelagem cinemática, conforme será desenvolvido nas seções seguintes.
+
+
+
+\section{Representações por Transformações Homogêneas}
+
+Na modelagem cinemática de manipuladores robóticos, é necessário descrever de forma consistente a posição e a orientação de cada elo em relação a um sistema de coordenadas de referência. Essa descrição é realizada por meio das transformações homogêneas, que permitem representar simultaneamente rotação e translação em uma única estrutura matricial \cite{romano2024_parte2}.
+
+Considere dois sistemas de coordenadas, $\{A\}$ e $\{B\}$, rigidamente associados a diferentes elos do manipulador. A postura do sistema $\{B\}$ em relação ao sistema $\{A\}$ pode ser descrita por uma matriz de transformação homogênea da forma:
+
+\begin{equation}
+^A\mathbf{T}_B =
+\begin{bmatrix}
+^A\mathbf{R}_B & \mathbf{p}_{A}^{B} \\
+\mathbf{0}_{1\times3} & 1
+\end{bmatrix}
+\end{equation}
+
+onde $^A\mathbf{R}_B$ é a matriz de rotação que define a orientação relativa entre os sistemas e $\mathbf{p}_{A}^{B}$ é o vetor posição da origem de $\{B\}$ expresso em $\{A\}$.
+
+A principal vantagem dessa representação é permitir a composição sucessiva de transformações por meio de multiplicação matricial. Assim, considerando três sistemas de coordenadas $\{A\}$, $\{B\}$ e $\{C\}$, tem-se:
+
+\begin{equation}
+^A\mathbf{T}_C = \, ^A\mathbf{T}_B \, ^B\mathbf{T}_C
+\end{equation}
+
+De forma geral, em um manipulador serial com $n$ elos, a pose do efetuador final em relação ao sistema de referência pode ser obtida pelo produto encadeado das transformações individuais:
+
+\begin{equation}
+^0\mathbf{T}_n = \, ^0\mathbf{T}_1 \, ^1\mathbf{T}_2 \, \cdots \, ^{n-1}\mathbf{T}_n
+\end{equation}
+
+Essa propriedade torna as transformações homogêneas fundamentais para a formulação da Cinemática Direta e para a aplicação da Convenção de Denavit--Hartenberg, apresentada na seção seguinte.
+\section{Convenção de Denavit--Hartenberg}
+
+Embora as transformações homogêneas permitam descrever a relação entre sistemas de coordenadas arbitrários, a modelagem direta de manipuladores com múltiplos elos pode tornar-se trabalhosa se não houver um procedimento sistemático para definir esses sistemas de referência. A Convenção de Denavit--Hartenberg (DH) estabelece uma metodologia padronizada para a atribuição de sistemas de coordenadas aos elos de uma cadeia cinemática aberta, simplificando a obtenção das transformações homogêneas sucessivas.
+
+Para cada elo $i$ de um manipulador serial, são definidos quatro parâmetros:
+
+\begin{itemize}
+    \item $\theta_i$: ângulo de rotação em torno do eixo $z_{i-1}$;
+    \item $d_i$: deslocamento ao longo do eixo $z_{i-1}$;
+    \item $a_i$: comprimento do elo, medido ao longo do eixo $x_i$;
+    \item $\alpha_i$: ângulo de torção entre os eixos $z_{i-1}$ e $z_i$, medido em torno de $x_i$.
+\end{itemize}
+
+Esses parâmetros permitem descrever completamente a transformação entre os sistemas de coordenadas $\{i-1\}$ e $\{i\}$ por meio da matriz homogênea:
+
+\begin{equation}
+^{i-1}\mathbf{T}_i =
+\begin{bmatrix}
+\cos\theta_i & -\sin\theta_i \cos\alpha_i & \sin\theta_i \sin\alpha_i & a_i \cos\theta_i \\
+\sin\theta_i & \cos\theta_i \cos\alpha_i  & -\cos\theta_i \sin\alpha_i & a_i \sin\theta_i \\
+0            & \sin\alpha_i               & \cos\alpha_i               & d_i \\
+0            & 0                          & 0                          & 1
+\end{bmatrix}
+\end{equation}
+
+Dessa forma, a modelagem cinemática de um manipulador com $n$ elos pode ser realizada a partir da construção de uma tabela contendo os quatro parâmetros DH para cada elo. A pose do efetuador final em relação ao sistema de referência é então obtida pelo produto sucessivo das matrizes individuais:
+
+\begin{equation}
+^0\mathbf{T}_n = \prod_{i=1}^{n} \, ^{i-1}\mathbf{T}_i
+\label{T_DH}
+\end{equation}
+
+A Convenção de Denavit--Hartenberg constitui, portanto, uma ferramenta fundamental para a formulação da Cinemática Direta de manipuladores seriais, sendo amplamente empregada na análise e implementação computacional desses sistemas.
+
+\section{Cinemática Direta}
+
+A Cinemática Direta consiste na determinação da posição e orientação do efetuador final de um manipulador a partir do conhecimento das variáveis articulares. Em termos matemáticos, trata-se do mapeamento:
+
+\begin{equation}
+\mathbf{q} \longrightarrow \, ^0\mathbf{T}_n
+\end{equation}
+
+onde $\mathbf{q} = [q_1, q_2, \dots, q_n]^T$ representa o vetor de coordenadas generalizadas e $^0\mathbf{T}_n$ é a matriz de transformação homogênea que descreve a pose do elo terminal em relação ao sistema de referência fixo à base.
+
+Utilizando a Convenção de Denavit--Hartenberg, a transformação completa do efetuador final em relação à base é obtida pelo produto sucessivo das matrizes $^{i-1}\mathbf{T}_i$, conforme a Equação (\ref{T_DH}). A matriz resultante pode ser escrita na forma:
+
+\begin{equation}
+^0\mathbf{T}_n =
+\begin{bmatrix}
+\mathbf{R} & \mathbf{p} \\
+\mathbf{0}_{1\times3} & 1
+\end{bmatrix}
+\end{equation}
+
+onde $\mathbf{R}$ representa a orientação do efetuador final em relação ao sistema de referência e $\mathbf{p}$ representa sua posição no espaço cartesiano.
+
+Portanto, a Cinemática Direta fornece uma relação explícita entre as variáveis articulares e a postura espacial do manipulador, sendo etapa fundamental na análise de movimento e no controle de manipuladores seriais.
+
+\section{Cinemática Inversa}
+
+A Cinemática Inversa consiste na determinação das variáveis articulares necessárias para que o efetuador final atinja uma determinada pose desejada no espaço cartesiano. Diferentemente da Cinemática Direta, que envolve apenas a multiplicação sucessiva de matrizes homogêneas, a Cinemática Inversa conduz, em geral, a um conjunto de equações não lineares, cuja solução pode apresentar múltiplas configurações admissíveis.
+
+Matematicamente, o problema pode ser descrito como o mapeamento inverso:
+
+\begin{equation}
+^0\mathbf{T}_n \longrightarrow \mathbf{q}
+\end{equation}
+
+onde $^0\mathbf{T}_n$ representa a transformação homogênea desejada do efetuador final e $\mathbf{q} = [q_1, q_2, \dots, q_n]^T$ é o vetor de coordenadas articulares.
+
+De modo geral, não existe uma solução analítica simples para manipuladores arbitrários, sendo frequentemente empregados métodos numéricos iterativos. Entretanto, para uma classe importante de manipuladores industriais com seis graus de liberdade e punho esférico, isto é, quando os três últimos eixos de rotação intersectam-se em um único ponto, é possível obter uma solução analítica por meio do desacoplamento entre posição e orientação.
+
+Nessa abordagem, o problema é dividido em duas etapas. Primeiramente, determinam-se as três primeiras variáveis articulares a partir da posição do centro do punho. Em seguida, com base na orientação desejada do efetuador final, calculam-se as três últimas variáveis articulares, associadas ao punho esférico.
+
+Esse desacoplamento reduz significativamente a complexidade do problema, permitindo a obtenção de soluções fechadas para manipuladores do tipo 6R amplamente utilizados em aplicações industriais. Ainda assim, podem existir múltiplas soluções geométricas válidas, correspondentes, por exemplo, a configurações do tipo ``cotovelo para cima'' ou ``cotovelo para baixo'', bem como configurações distintas do punho.
+
+\section{Planejamento de Trajetória}
+
+Após a determinação das configurações articulares necessárias para atingir determinadas poses no espaço cartesiano, torna-se necessário definir como o manipulador irá se mover entre essas configurações ao longo do tempo. Esse processo é denominado planejamento de trajetória.
+
+O planejamento pode ser realizado tanto no espaço cartesiano quanto no espaço das juntas. No presente trabalho, considera-se a interpolação no espaço articular, em que cada variável $q_i(t)$ é descrita como uma função contínua do tempo.
+
+Uma abordagem amplamente empregada consiste na utilização de polinômios para garantir continuidade de posição e velocidade ao longo do movimento. Entre as alternativas possíveis, o polinômio cúbico apresenta-se como solução adequada quando se deseja impor condições de posição inicial e final, bem como velocidades inicial e final especificadas.
+
+Assim, para uma junta genérica $q(t)$, pode-se escrever:
+
+\begin{equation}
+q(t) = a_0 + a_1 t + a_2 t^2 + a_3 t^3
+\end{equation}
+
+Os coeficientes do polinômio são determinados a partir das condições de contorno:
+
+\begin{align}
+q(0) &= q_0 \\
+q(T) &= q_f \\
+\dot{q}(0) &= \dot{q}_0 \\
+\dot{q}(T) &= \dot{q}_f
+\end{align}
+
+No caso particular em que as velocidades inicial e final são nulas, obtém-se uma trajetória suave, com aceleração contínua e ausência de descontinuidades abruptas no movimento.
+
+Dessa forma, o planejamento de trajetória por interpolação polinomial permite gerar perfis temporais consistentes para posição, velocidade e aceleração das juntas, sendo amplamente utilizado em aplicações industriais e em simulações cinemáticas de manipuladores seriais.

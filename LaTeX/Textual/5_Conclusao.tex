@@ -1,0 +1,45 @@
+\chapter{Conclusão}
+
+Este trabalho apresentou o desenvolvimento de um simulador interativo para estudo da cinemática de manipuladores robóticos seriais com seis graus de liberdade. A ferramenta foi implementada como uma aplicação \textit{web} executada diretamente no navegador, utilizando tecnologias amplamente acessíveis como HTML, CSS e JavaScript, juntamente com a biblioteca gráfica Babylon.js para renderização tridimensional.
+
+O sistema desenvolvido integra diferentes aspectos fundamentais da robótica manipuladora. Inicialmente, foi realizada a modelagem cinemática do manipulador com base na Convenção de Denavit--Hartenberg, permitindo a descrição matemática da cadeia cinemática e a obtenção da transformação homogênea do efetuador final. A partir dessa modelagem, foram implementados os algoritmos de cinemática direta e cinemática inversa, sendo esta última baseada em uma solução analítica viabilizada pela configuração de punho esférico do manipulador.
+
+Além da modelagem cinemática, o simulador incorpora funcionalidades de visualização e interação que permitem ao usuário explorar o comportamento do manipulador de forma intuitiva. O sistema possibilita tanto o controle direto das variáveis articulares quanto o controle cartesiano do efetuador final, permitindo observar em tempo real a relação entre a configuração das juntas e a pose resultante do manipulador.
+
+Também foi implementado um mecanismo de planejamento de trajetória baseado em interpolação polinomial cúbica no espaço das juntas. Essa abordagem permite a geração de movimentos suaves entre diferentes configurações articulares, possibilitando a visualização simultânea dos perfis de posição, velocidade e aceleração das juntas ao longo do tempo.
+
+Os testes realizados demonstraram a consistência entre o modelo matemático apresentado na fundamentação teórica e o comportamento observado no simulador. A validação das transformações homogêneas e das soluções de cinemática inversa evidenciou a coerência entre as poses especificadas pelo usuário, as variáveis articulares calculadas e a configuração espacial resultante do manipulador.
+
+Dessa forma, o sistema desenvolvido cumpre o objetivo de fornecer uma ferramenta didática para apoio ao estudo de robótica, permitindo a visualização integrada dos conceitos de cinemática, orientação espacial e planejamento de movimento.
+
+\section{Aplicabilidade Didática}
+
+O simulador desenvolvido possui potencial significativo como ferramenta de apoio ao ensino de robótica. A visualização simultânea do manipulador em movimento, das variáveis articulares e das matrizes de transformação permite estabelecer uma ligação direta entre a formulação matemática apresentada em sala de aula e o comportamento geométrico observado no sistema.
+
+A possibilidade de alternar entre controle no espaço das juntas e controle no espaço cartesiano permite que o usuário explore diferentes aspectos da cinemática de manipuladores, facilitando a compreensão de conceitos como orientação espacial, transformações homogêneas e relações entre variáveis articulares e pose do efetuador final.
+
+Adicionalmente, a geração de trajetórias e a visualização dos perfis de posição, velocidade e aceleração das juntas contribuem para a compreensão do planejamento de movimento em manipuladores seriais.
+
+Dessa forma, a ferramenta pode ser utilizada como recurso complementar na disciplina de Automação e Robótica, auxiliando na interpretação visual de conceitos que frequentemente são apresentados de forma predominantemente matemática.
+
+\section{Limitações do Sistema}
+
+Embora o simulador desenvolvido permita a exploração de diversos conceitos fundamentais da robótica manipuladora, algumas limitações ainda estão presentes na implementação atual.
+
+Uma das principais limitações está relacionada à ausência de verificação de colisões entre os elos do manipulador. O sistema não possui mecanismos para impedir que determinadas configurações articulares levem a situações de auto-colisão, nas quais diferentes partes do manipulador podem se interceptar no espaço.
+
+Outra limitação diz respeito à ausência de uma definição explícita da área de trabalho (\textit{workspace}) do manipulador. Dessa forma, o simulador não impõe restrições geométricas que limitem a região espacial acessível ao efetuador final, podendo permitir a definição de poses que, em um sistema físico real, estariam fora da região alcançável do robô.
+
+Adicionalmente, o modelo implementado considera apenas aspectos cinemáticos do manipulador, não incluindo efeitos dinâmicos como forças, torques ou limitações relacionadas aos atuadores.
+
+\section{Trabalhos Futuros}
+
+A partir da estrutura desenvolvida neste trabalho, diversas extensões podem ser exploradas em trabalhos futuros.
+
+Uma possível evolução do simulador consiste na implementação de algoritmos de detecção e prevenção de colisões entre os elos do manipulador, permitindo evitar configurações inviáveis do ponto de vista geométrico. Essa funcionalidade tornaria a simulação mais próxima do comportamento observado em sistemas robóticos reais.
+
+Outra possibilidade consiste na definição explícita do espaço de trabalho do manipulador, incluindo restrições geométricas e limites operacionais que permitam identificar poses alcançáveis e não alcançáveis pelo robô.
+
+Também pode ser considerada a inclusão de modelos dinâmicos do manipulador, permitindo analisar esforços, torques articulares e estratégias de controle de movimento.
+
+Por fim, a ferramenta desenvolvida pode ser expandida para suportar diferentes arquiteturas de manipuladores, bem como novas funcionalidades de interação e visualização, ampliando seu potencial de utilização como recurso educacional em disciplinas relacionadas à robótica e automação.

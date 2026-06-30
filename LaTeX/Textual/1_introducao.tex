@@ -1,0 +1,58 @@
+\chapter{Introdução}
+
+A área de automação e robótica tem apresentado crescimento significativo nas últimas décadas, impulsionada pelo avanço da eletrônica, da computação e dos sistemas embarcados. Em especial, os manipuladores robóticos industriais desempenham papel central em processos produtivos, aplicações médicas, pesquisa acadêmica e desenvolvimento tecnológico. A compreensão do funcionamento de um braço robótico, especialmente aqueles com múltiplos graus de liberdade, exige o domínio de conceitos como cinemática direta e inversa, sistemas de coordenadas, transformações homogêneas e controle de movimento.
+
+Entretanto, tais conceitos frequentemente apresentam elevado grau de abstração matemática, o que pode dificultar a assimilação por parte dos alunos. A visualização espacial dos movimentos e a correlação entre parâmetros matemáticos e deslocamentos físicos nem sempre são triviais quando abordadas apenas por meio de equações ou diagramas bidimensionais. Nesse contexto, ferramentas computacionais interativas surgem como recursos didáticos relevantes, capazes de integrar teoria e prática de forma mais intuitiva.
+
+Este trabalho propõe o desenvolvimento de uma ferramenta \textit{web} para visualização e simulação de um braço robótico com seis graus de liberdade, com foco educacional, permitindo aos alunos explorar de forma dinâmica os conceitos estudados em sala de aula.
+
+\section{Motivação}
+
+A disciplina de automação e robótica envolve conteúdos que exigem forte capacidade de abstração espacial e interpretação matemática. Muitos estudantes demonstram dificuldade em compreender como alterações nos parâmetros articulares influenciam a posição e orientação do efetuador final. Essa lacuna entre a formulação teórica e a visualização prática pode impactar negativamente o processo de aprendizagem.
+
+Além disso, softwares comerciais de simulação robótica, embora robustos, costumam apresentar custo elevado, interfaces complexas ou requisitos computacionais significativos, o que pode limitar seu uso em ambientes acadêmicos. Há, portanto, a necessidade de uma solução acessível, de fácil utilização e voltada especificamente ao contexto didático.
+
+A motivação deste trabalho reside na criação de um recurso complementar ao ensino tradicional, que permita ao aluno manipular variáveis em tempo real, observar o comportamento do manipulador e consolidar a compreensão dos fundamentos de cinemática e movimentação de braços robóticos. Ao proporcionar uma experiência visual e interativa, busca-se reduzir a barreira conceitual e tornar o aprendizado mais efetivo.
+
+\section{Objetivo}
+
+O objetivo deste trabalho é desenvolver uma ferramenta computacional, acessível via navegador \textit{web}, destinada aos alunos do curso de automação e robótica, com a finalidade de auxiliar na visualização e no entendimento dos conceitos relacionados à modelagem e movimentação de um braço robótico com seis graus de liberdade.
+
+Especificamente, pretende-se:
+
+\begin{itemize}
+    \item Implementar a representação tridimensional de um manipulador robótico articulado;
+    \item Permitir a manipulação dos ângulos das juntas de forma interativa;
+    \item Facilitar a compreensão da relação entre parâmetros articulares e a posição/orientação do efetuador final;
+    \item Disponibilizar a ferramenta de forma simples e acessível, sem necessidade de instalação de softwares específicos.
+\end{itemize}
+
+Dessa forma, o trabalho busca contribuir para o processo de didática por meio da integração entre fundamentos teóricos e experimentação virtual.
+
+\section{Metodologia}
+
+A metodologia adotada baseia-se no desenvolvimento de uma aplicação \textit{web}, estruturada a partir das tecnologias HTML, CSS e JavaScript. O HTML será utilizado para estruturar os elementos da interface, o CSS para definição do layout e estilização visual, e o JavaScript para implementação da lógica de interação e manipulação dos parâmetros do modelo.
+
+Para a renderização e animação tridimensional do braço robótico, será utilizada a biblioteca Babylon.js, que permite a criação de ambientes 3D diretamente no navegador, por meio de WebGL. Essa biblioteca possibilita a modelagem de objetos, aplicação de transformações espaciais, definição de hierarquias entre componentes e controle de animações, sendo adequada para a representação de manipuladores articulados.
+
+As partes que compõem o manipulador 3D foram desenhadas na ferramenta \textit{web} de \textit{Computer-Aided Design} (CAD) Onshape.
+\abbrev{CAD}{Computer Aided Design}
+
+O desenvolvimento seguirá abordagem incremental, iniciando pela modelagem geométrica básica do braço robótico, seguida pela implementação das articulações e relações hierárquicas entre os elos. Posteriormente, serão incorporados controles interativos para ajuste dos ângulos das juntas, permitindo a observação em tempo real dos efeitos das transformações.
+
+\section{Organizaç{\~ a}o do trabalho}
+
+Este trabalho está estruturado em quatro capítulos principais, organizados de forma a conduzir o leitor desde a contextualização teórica até a validação prática do sistema desenvolvido.
+
+O Capítulo 1 apresenta a introdução ao tema, contextualizando a área de robótica e manipuladores articulados, expondo a motivação do trabalho, seus objetivos e a metodologia adotada para o desenvolvimento da ferramenta proposta.
+
+O Capítulo 2 apresenta a fundamentação teórica necessária à compreensão do sistema implementado. São abordados os conceitos de manipuladores robóticos, representações por transformações homogêneas, a Convenção de Denavit–Hartenberg (DH), cinemática direta, cinemática inversa e fundamentos de planejamento de trajetória. Esse capítulo estabelece a base matemática e conceitual que sustenta o desenvolvimento do modelo computacional.
+
+\abbrev{DH}{Denavit-Hartenberg}
+
+O Capítulo 3 descreve a metodologia de desenvolvimento e a implementação do sistema. São detalhadas a arquitetura geral da aplicação, a modelagem do manipulador, a implementação da cinemática direta e inversa, o tratamento de singularidades, o planejamento de trajetórias e a construção da interface gráfica com visualização tridimensional em ambiente \textit{web}.
+
+O Capítulo 4 apresenta os resultados obtidos. São demonstrados exemplos de utilização da interface, testes de validação da cinemática direta e inversa, bem como simulações de execução de trajetórias. Também são discutidas as limitações observadas e as possibilidades de aprimoramento futuro.
+
+Por fim, são apresentadas as considerações finais, sintetizando as contribuições do trabalho e destacando perspectivas para desenvolvimentos posteriores.
+

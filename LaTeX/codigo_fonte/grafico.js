@@ -58,7 +58,7 @@ const chartConfig = {
         labels: [],
         datasets: [
             {
-                label: 'θ1',
+                label: 'J1',
                 data: [],
                 borderColor: 'rgba(255, 0, 0, 1)',
                 borderWidth: 1,
@@ -66,7 +66,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ2',
+                label: 'J2',
                 data: [],
                 borderColor: 'rgba(0, 255, 0, 1)',
                 borderWidth: 1,
@@ -74,7 +74,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ3',
+                label: 'J3',
                 data: [],
                 borderColor: 'rgba(0, 0, 255, 1)',
                 borderWidth: 1,
@@ -82,7 +82,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ4',
+                label: 'J4',
                 data: [],
                 borderColor: 'rgba(255, 0, 255, 1)',
                 borderWidth: 1,
@@ -90,7 +90,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ5',
+                label: 'J5',
                 data: [],
                 borderColor: 'rgba(255, 170, 50, 1)',
                 borderWidth: 1,
@@ -98,7 +98,7 @@ const chartConfig = {
                 pointRadius: 0
             },
             {
-                label: 'θ6',
+                label: 'J6',
                 data: [],
                 borderColor: 'rgba(0, 255, 255, 1)',
                 borderWidth: 1,

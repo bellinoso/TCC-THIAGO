@@ -13,13 +13,13 @@ A Figura \ref{fig:interface_completa_final} apresenta a interface principal do s
 \label{fig:interface_completa_final}
 \end{figure}
 
-A interface permite ao usuário interagir diretamente com o manipulador por meio de controles articulares ou cartesianos, além de acompanhar em tempo real os gráficos de posição, velocidade e aceleração das juntas. Também é possível observar a matriz de transformação homogênea do efetuador final e o caminho espacial percorrido durante a execução de trajetórias.
+A interface permite ao usuário interagir diretamente com o manipulador por meio de controles articulares ou cartesianos, além de acompanhar em tempo real os gráficos de posição, velocidade e aceleração das juntas. Também é possível observar a matriz de transformação homogênea do efetuador final, o caminho espacial percorrido durante a execução de trajetórias e a tabela de programação dos pontos intermediários. Nessa tabela, o usuário seleciona uma das seis juntas e edita as posições, velocidades e durações utilizadas como condições de contorno.
 
 \section{Testes de Cinemática Direta}
 
 Para verificar o funcionamento da cinemática direta implementada no simulador, foram realizados testes utilizando diferentes configurações articulares. Em cada caso, os valores das variáveis articulares foram definidos manualmente por meio dos controles deslizantes da interface, permitindo observar a configuração espacial resultante do manipulador.
 
-A Figura \ref{fig:teste_cd} apresenta um exemplo de configuração articular aplicada ao manipulador. Na interface também são exibidos a matriz de transformação homogênea global do efetuador final, a tabela de parâmetros de Denavit--Hartenberg e os eixos locais associados às juntas.
+A Figura \ref{fig:teste_cd} apresenta um exemplo de configuração articular aplicada ao manipulador. Na interface também são exibidos a matriz de transformação homogênea global do efetuador final, a tabela de parâmetros de \textit{Denavit-Hartenberg} e os eixos locais associados às juntas.
 
 \begin{figure}[H]
 \centering
@@ -35,7 +35,7 @@ $\theta_4=219.20^\circ$;
 $\theta_5=-70.00^\circ$;
 $\theta_6=185,60^\circ$.
 
-A partir dessa configuração, o simulador calcula automaticamente a matriz de transformação homogênea do efetuador final, exibida na interface. O resultado obtido é consistente com a modelagem baseada na Convenção de Denavit–Hartenberg apresentada no Capítulo 2.
+A partir dessa configuração, o simulador calcula automaticamente a matriz de transformação homogênea do efetuador final, exibida na interface. O resultado obtido é consistente com a modelagem baseada na Convenção de \textit{Denavit–Hartenberg} apresentada no Capítulo 2.
 
 \section{Testes de Cinemática Inversa}
 
@@ -43,7 +43,7 @@ A validação da implementação da cinemática inversa foi realizada por meio d
 
 No modo de controle cartesiano, o usuário define diretamente a posição do efetuador final por meio das coordenadas $x$, $y$ e $z$, bem como sua orientação utilizando os ângulos \textit{roll}, \textit{pitch} e \textit{yaw}. A partir desses valores, o algoritmo de cinemática inversa calcula automaticamente o conjunto correspondente de variáveis articulares, que são então aplicadas ao manipulador.
 
-A Figura \ref{fig:teste_ci} apresenta um exemplo de pose definida pelo usuário utilizando os controles cartesianos da interface.
+A Figura \ref{fig:teste_ci} apresenta um exemplo de posicionamento definido pelo usuário utilizando os controles cartesianos da interface.
 
 \begin{figure}[H]
 \centering
@@ -137,29 +137,55 @@ Esse resultado coincide com a submatriz de rotação correspondente às três pr
 
 \section{Execução de Trajetórias}
 
-O simulador permite a execução de trajetórias definidas a partir de uma sequência de configurações articulares intermediárias. Para avaliar essa funcionalidade, foram programados diferentes movimentos utilizando a interpolação polinomial cúbica descrita anteriormente.
+O simulador permite a execução de trajetórias definidas a partir de uma sequência de pontos intermediários. Para avaliar essa funcionalidade, foram programados diferentes movimentos utilizando a interpolação polinomial cúbica descrita anteriormente. Cada ponto fornece uma única posição e velocidade para cada junta, compartilhadas pelos dois segmentos adjacentes.
 
-A Figura \ref{fig:trajetoria_execucao} apresenta um exemplo de execução de trajetória no simulador. A tabela \ref{tab:trajetoria} mostra os valores das variáveis para cada uma das configurações usadas no exemplo, assim como o tempo definido para cada trecho do percurso.
+A Figura \ref{fig:trajetoria_execucao} apresenta um exemplo de execução de trajetória no simulador. A Tabela \ref{tab:trajetoria} mostra as posições e os tempos utilizados, enquanto a Tabela \ref{tab:velocidades_trajetoria} apresenta as velocidades sugeridas pelo sistema para as mesmas configurações. O intervalo $\Delta t$ associado a cada linha corresponde à duração desde o ponto anterior.
 
 \begin{table}[H]
 \centering
-\caption{Posicionamentos configurados ao longo da trajetória}
+\caption{Posições e tempos configurados ao longo da trajetória}
 \label{tab:trajetoria}
 \begin{tabular}{c c c c c c c c}
 \hline
-\textbf{Configuração} & $\boldsymbol{\theta_1}(^\circ)$ & $\boldsymbol{\theta_2}(^\circ)$ & $\boldsymbol{\theta_3}(^\circ)$ & $\boldsymbol{\theta_4}(^\circ)$ & $\boldsymbol{\theta_5}(^\circ)$ & $\boldsymbol{\theta_6}(^\circ)$ &  $\boldsymbol{\Delta t}$ (s)  \\ 
+\textbf{Pontos} & $\boldsymbol{\theta_1}(^\circ)$ & $\boldsymbol{\theta_2}(^\circ)$ & $\boldsymbol{\theta_3}(^\circ)$ & $\boldsymbol{\theta_4}(^\circ)$ & $\boldsymbol{\theta_5}(^\circ)$ & $\boldsymbol{\theta_6}(^\circ)$ & $\boldsymbol{\Delta t}$ (s) \\ 
 \hline
-1 & 180.0 & 90.0 & 0.0 & 180.0 & 0.0 & 0.0 & - \\
-2 & 130.0 & 105.0 & 10.0 & 122.4 & 40.8 & 57.6 & 2 \\
-3 & 264.0 & 33.6 & 49.0 & 201.6 & 90.0 & 199.2 & 3 \\
-4 & 307.2 & 12.0 & -7.2 & 276 & 52.8 & 235.2 & 1 \\
-5 & 124.8 & 122.4 & -191.8 & 360 & -75.6 & 151.2 & 3 \\
+$P_{1}$ & 180.0 & 90.0 & 0.0 & 180.0 & 0.0 & 0.0 & - \\
+$P_{2}$ & 130.0 & 105.0 & 10.0 & 122.4 & 40.8 & 57.6 & 2 \\
+$P_{3}$ & 264.0 & 33.6 & 49.0 & 201.6 & 90.0 & 199.2 & 3 \\
+$P_{4}$ & 307.2 & 12.0 & -7.2 & 276 & 52.8 & 235.2 & 1 \\
+$P_{5}$ & 124.8 & 122.4 & -191.8 & 360 & -75.6 & 151.2 & 3 \\
 
 
 \hline
 \end{tabular}
 \end{table}
 
+\begin{table}[H]
+\centering
+\caption{Velocidades de contorno sugeridas para os pontos da trajetória}
+\label{tab:velocidades_trajetoria}
+\begin{tabular}{c c c c c c c}
+\hline
+\textbf{Pontos} & $\boldsymbol{\dot{\theta}_1}(^\circ/\mathrm{s})$ & $\boldsymbol{\dot{\theta}_2}(^\circ/\mathrm{s})$ & $\boldsymbol{\dot{\theta}_3}(^\circ/\mathrm{s})$ & $\boldsymbol{\dot{\theta}_4}(^\circ/\mathrm{s})$ & $\boldsymbol{\dot{\theta}_5}(^\circ/\mathrm{s})$ & $\boldsymbol{\dot{\theta}_6}(^\circ/\mathrm{s})$ \\
+\hline
+$P_{1}$ & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
+$P_{2}$ & 0.00 & 0.00 & 8.20 & 0.00 & 18.80 & 36.16 \\
+$P_{3}$ & 43.57 & -22.15 & 0.00 & 62.40 & 0.00 & 38.80 \\
+$P_{4}$ & 0.00 & 0.00 & -57.53 & 62.80 & -38.60 & 0.00 \\
+$P_{5}$ & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 & 0.00 \\
+\hline
+\end{tabular}%
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{Imagens/tabela de programacao theta 1.png}
+\caption{Posições e condições de contorno programadas para $\theta_1$.}
+\label{fig:programacaotheta1}
+\end{figure}
+
+
+As velocidades dos pontos inicial e final foram mantidas nulas. Nos pontos intermediários, a sugestão foi obtida a partir das inclinações dos segmentos vizinhos. Quando houve mudança de sentido de uma junta, a velocidade sugerida foi igual a zero. Nos demais casos, foi utilizada a média ponderada pelas durações. Esses valores permanecem editáveis na interface.
 
 \begin{figure}[H]
 \centering
@@ -168,22 +194,22 @@ A Figura \ref{fig:trajetoria_execucao} apresenta um exemplo de execução de tra
 \label{fig:trajetoria_execucao}
 \end{figure}
 
-Durante a execução do movimento, o sistema atualiza continuamente a posição das juntas e registra o caminho percorrido pelo efetuador final no espaço tridimensional.
+Durante a execução do movimento, o sistema atualiza continuamente a posição das juntas e registra o caminho percorrido pelo efetuador final no espaço tridimensional. Nas junções entre os trechos, a velocidade final de cada junta coincide com a velocidade inicial do segmento seguinte, evitando a parada obrigatória nos pontos intermediários.
 
 \section{Análise dos Gráficos Gerados}
 
 Durante a execução das trajetórias programadas, o simulador gera automaticamente gráficos correspondentes às variáveis de posição, velocidade e aceleração das juntas.
 
-A Figura \ref{fig:grafico_trajetoria} apresenta os gráficos gerados após a execução do movimento programado exibido na Figura \ref{fig:trajetoria_execucao}
+A Figura \ref{fig:grafico_trajetoria} apresenta os gráficos gerados após a execução do movimento programado exibido na Figura \ref{fig:trajetoria_execucao}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8 \textwidth]{Imagens/graficos_exemplo.png}
+\includegraphics[width=0.8 \textwidth]{Imagens/graficos_exemplo_2.png}
 \caption{Perfis de posição, velocidade e aceleração gerados durante a execução de uma trajetória.}
 \label{fig:grafico_trajetoria}
 \end{figure}
 
-Observa-se que os perfis apresentam comportamento suave e contínuo, conforme esperado para trajetórias geradas por interpolação polinomial cúbica. A continuidade das curvas confirma o correto funcionamento da implementação descrita no Capítulo 3.
+Observa-se que os perfis de posição e velocidade permanecem contínuos nos instantes correspondentes aos pontos intermediários, conforme esperado para trajetórias geradas por segmentos polinomiais cúbicos com condições de contorno compartilhadas. O perfil de aceleração é linear dentro de cada segmento, porém pode apresentar saltos nas junções, uma vez que a aceleração não é imposta como condição de contorno do polinômio cúbico. Esse comportamento é compatível com a formulação apresentada no Capítulo 2 e confirma o funcionamento da implementação descrita no Capítulo 3.
 
 \section{Discussão dos Resultados}
 

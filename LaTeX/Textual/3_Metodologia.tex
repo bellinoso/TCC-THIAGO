@@ -10,11 +10,11 @@ O simulador desenvolvido neste trabalho foi implementado como uma aplicação \t
 A aplicação foi desenvolvida utilizando as seguintes tecnologias:
 
 \begin{itemize}
-    \item \textbf{HTML}: responsável pela estruturação dos elementos da interface;
-    \item \textbf{CSS}: utilizado para organização visual e disposição dos componentes na página;
-    \item \textbf{JavaScript}: empregado na implementação da lógica do sistema;
-    \item \textbf{Babylon.js}: biblioteca gráfica baseada em WebGL utilizada para renderização tridimensional e manipulação da cena;
-    \item \textbf{Chart.js}: biblioteca utilizada para geração dos gráficos de posição, velocidade e aceleração das juntas.
+    \item \textbf{\textit{HTML}}: responsável pela estruturação dos elementos da interface;
+    \item \textbf{\textit{CSS}}: utilizado para organização visual e disposição dos componentes na página;
+    \item \textbf{\textit{JavaScript}}: empregado na implementação da lógica do sistema;
+    \item \textbf{\textit{Babylon.js}}: biblioteca gráfica baseada em \textit{WebGL} utilizada para renderização tridimensional e manipulação da cena;
+    \item \textbf{\textit{Chart.js}}: biblioteca utilizada para geração dos gráficos de posição, velocidade e aceleração das juntas.
 \end{itemize}
 
 Toda a execução ocorre no lado do cliente (\textit{client-side}), sendo o navegador responsável tanto pelo processamento matemático quanto pela renderização gráfica em tempo real.
@@ -24,10 +24,11 @@ Toda a execução ocorre no lado do cliente (\textit{client-side}), sendo o nave
 O código foi organizado de forma modular, separando responsabilidades específicas em diferentes arquivos:
 
 \begin{itemize}
-    \item \texttt{index.html}: define a estrutura da interface e os elementos visuais;
+    \item \texttt{simulador.html}: define a estrutura da interface e os elementos visuais;
     \item \texttt{scene.js}: implementa a criação da cena 3D, modelagem do manipulador e controle das juntas;
     \item \texttt{aux\_func.js}: contém as funções matemáticas auxiliares, incluindo rotinas relacionadas à cinemática inversa;
-    \item \texttt{grafico.js}: responsável pela configuração e atualização dos gráficos.
+    \item \texttt{grafico.js}: responsável pela configuração e atualização dos gráficos;
+    \item \texttt{trajectory\_math.js}: contém o cálculo dos coeficientes dos polinômios cúbicos, sua avaliação temporal e a sugestão das velocidades nos pontos intermediários.
 \end{itemize}
 
 Essa divisão favorece a organização do código, facilita a manutenção e permite maior clareza na separação entre interface gráfica, modelagem matemática e visualização.
@@ -96,13 +97,13 @@ Nessa abordagem, as três primeiras variáveis articulares determinam a posiçã
 
 \subsection{Parâmetros Cinemáticos do Manipulador}
 
-Com base na geometria definida, foram estabelecidos os parâmetros de Denavit--Hartenberg correspondentes a cada elo, conforme apresentado no Capítulo 2. A atribuição dos sistemas de coordenadas foi realizada de modo consistente com a configuração 6R e com a interseção dos eixos no punho esférico.
+Com base na geometria definida, foram estabelecidos os parâmetros de \textit{Denavit-Hartenberg} correspondentes a cada elo, conforme apresentado no Capítulo 2. A atribuição dos sistemas de coordenadas foi realizada de modo consistente com a configuração 6R e com a interseção dos eixos no punho esférico.
 
 A definição adequada desses parâmetros garante que a modelagem matemática represente corretamente a estrutura física do manipulador, permitindo que o produto sucessivo das transformações homogêneas reproduza o comportamento geométrico observado na representação tridimensional.
 
 \begin{table}[H]
 \centering
-\caption{Parâmetros de Denavit--Hartenberg do manipulador 6R}
+\caption{Parâmetros de \textit{Denavit-Hartenberg} do manipulador 6R}
 \label{tab:DH_parametros}
 \begin{tabular}{c c c c c}
 \hline
@@ -118,17 +119,25 @@ A definição adequada desses parâmetros garante que a modelagem matemática re
 \end{tabular}
 \end{table}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{Imagens/esquema_eixos.png}
+    \caption{Desenho esquemático das juntas e sistemas de referência}
+    \label{fig:esquema_eixos}
+\end{figure}
+
 \subsection{Modelagem CAD e Exportação}
 
-O modelo mecânico do manipulador foi desenvolvido na plataforma Onshape, ferramenta de modelagem CAD baseada em nuvem. Cada elo foi modelado individualmente, respeitando as dimensões adotadas na definição dos parâmetros cinemáticos e priorizando a clareza estrutural do conjunto.
+O modelo mecânico do manipulador foi desenvolvido na plataforma \textit{Onshape}, ferramenta de modelagem CAD baseada em nuvem. Cada elo foi modelado individualmente, respeitando as dimensões adotadas na definição dos parâmetros cinemáticos e priorizando a clareza estrutural do conjunto.
 
 Foram modelados os principais elementos estruturais do manipulador, incluindo base, elos intermediários e efetuador final. Elementos secundários, como parafusos ou componentes internos não relevantes para a análise cinemática, não foram incluídos, a fim de manter o modelo computacionalmente leve e adequado para execução em ambiente \textit{web}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{Imagens/OnShape_Assembly.png}
-    \caption{Modelo CAD do manipulador serial 6R desenvolvido no Onshape.}
-    \label{fig:OnShape_Assembly}
+    \caption{Desenho esquemático das juntas e sistemas de refere}
+    \caption{Modelo CAD do manipulador serial 6R desenvolvido no \textit{Onshape}.}
+    \label{fig:esquema_eixos}
 \end{figure}
 
 Após a modelagem, os componentes foram exportados no formato STL. Esses arquivos foram importados para o ambiente tridimensional da aplicação \textit{web}, onde foram realizados ajustes de orientação inicial e posicionamento relativo, garantindo alinhamento com a estrutura cinemática implementada.
@@ -146,11 +155,13 @@ Essa integração entre o modelo geométrico e o modelo matemático assegura con
     \label{fig:render_eixos}
 \end{figure}
 
+
+
 \section{Implementação da Cinemática Direta}
 
 A implementação da cinemática direta no simulador segue a formulação apresentada no Capítulo 2, na qual o posicionamento do efetuador final é obtida pelo produto sucessivo das matrizes de transformação homogênea associadas a cada elo do manipulador.
 
-No ambiente computacional, essa operação não é implementada explicitamente por meio da multiplicação das matrizes DH. Em vez disso, ela é realizada implicitamente pelo motor gráfico Babylon.js por meio da estrutura hierárquica de transformações da cena tridimensional. Nessa estrutura, cada junta do manipulador é representada por um nó de transformação, de modo que as rotações aplicadas às juntas propagam-se automaticamente ao longo da cadeia cinemática, produzindo o mesmo efeito geométrico descrito pelo modelo matemático.
+No ambiente computacional, essa operação não é implementada explicitamente por meio da multiplicação das matrizes DH. Em vez disso, ela é realizada implicitamente pelo motor gráfico \textit{Babylon.js} por meio da estrutura hierárquica de transformações da cena tridimensional. Nessa estrutura, cada junta do manipulador é representada por um nó de transformação, de modo que as rotações aplicadas às juntas propagam-se automaticamente ao longo da cadeia cinemática, produzindo o mesmo efeito geométrico descrito pelo modelo matemático.
 
 \subsection{Estratégia de Implementação}
 
@@ -185,7 +196,7 @@ Essa atualização ocorre dentro do laço de renderização da aplicação, perm
 
 Embora a multiplicação explícita das matrizes homogêneas não seja realizada manualmente no código, a matriz de transformação global do efetuador final é obtida diretamente a partir da estrutura hierárquica da cena tridimensional.
 
-Para isso, utiliza-se a função \texttt{getWorldMatrix()} do motor gráfico Babylon.js, aplicada ao nó correspondente ao efetuador final. Essa função retorna a matriz de transformação acumulada do objeto em relação ao sistema de referência global da cena, incorporando todas as rotações e translações herdadas da cadeia de nós pais.
+Para isso, utiliza-se a função \texttt{getWorldMatrix()} do motor gráfico \textit{Babylon.js}, aplicada ao nó correspondente ao efetuador final. Essa função retorna a matriz de transformação acumulada do objeto em relação ao sistema de referência global da cena, incorporando todas as rotações e translações herdadas da cadeia de nós pais.
 
 Após sua obtenção, a matriz é organizada no formato $4 \times 4$ e exibida na interface do simulador, na região inferior da tela. Essa atualização ocorre em tempo real, acompanhando continuamente as variações impostas às juntas, seja por meio dos \textit{sliders} ou durante a execução de trajetórias programadas.
 
@@ -279,7 +290,7 @@ O código completo referente à implementação dessas etapas encontra-se no Ane
 
 \subsection{Interface de Controle Cartesiano}
 
-Além do controle direto das variáveis articulares, o simulador disponibiliza um modo alternativo de operação baseado em coordenadas cartesianas.
+Além do controle direto das variáveis articulares, o simulador disponibiliza um modo alternativo de operação baseado em coordenadas cartesianas no sistema de coordenadas de referência da base \{0\}
 
 Nesse modo, o usuário define diretamente:
 
@@ -332,15 +343,42 @@ Nesse modo de operação, o usuário pode registrar uma sequência de configura�
 
 \subsection{Definição dos Pontos da Trajetória}
 
-Os pontos da trajetória são definidos diretamente a partir da configuração atual do manipulador. Ao registrar um novo ponto, o sistema armazena os valores das variáveis articulares correspondentes, bem como o tempo de execução associado ao deslocamento até o próximo ponto.
+Os pontos da trajetória são definidos inicialmente a partir da configuração atual do manipulador. Ao registrar um novo ponto, o sistema armazena os valores das seis variáveis articulares e cria, para cada junta, uma condição de velocidade. Também é armazenado o intervalo de tempo associado ao deslocamento desde o ponto anterior. Consequentemente, o primeiro ponto não possui duração anterior e seu tempo acumulado é igual a zero.
 
-Dessa forma, cada segmento da trajetória é definido por um par de configurações articulares consecutivas e pelo intervalo de tempo necessário para a transição entre elas.
+Dessa forma, cada segmento da trajetória é definido por um par de configurações articulares consecutivas, pelas velocidades nas duas extremidades e pelo intervalo de tempo necessário para a transição entre elas. As posições, velocidades e durações podem ser posteriormente ajustadas pelo usuário na tabela de programação, sem que seja necessário cadastrar novamente os pontos.
 
 \subsection{Cálculo dos Coeficientes do Polinômio}
 
-Para cada junta do manipulador, os coeficientes do polinômio cúbico são calculados a partir das posições inicial e final do movimento e do tempo total definido para o segmento da trajetória. Conforme apresentado na Seção 2.6, são consideradas velocidades nulas nos instantes inicial e final do movimento, garantindo suavidade na transição entre os pontos programados.
+Para cada junta do manipulador, os coeficientes do polinômio cúbico são calculados a partir das posições e velocidades inicial e final do segmento e de sua duração. Para um trecho entre os pontos $P_k$ e $P_{k+1}$, com duração $T_k$, são empregados os coeficientes
+
+\begin{align}
+a_0 &= q_k, \\
+a_1 &= \dot{q}_k, \\
+a_2 &= \frac{3(q_{k+1}-q_k)-(2\dot{q}_k+\dot{q}_{k+1})T_k}{T_k^2}, \\
+a_3 &= \frac{-2(q_{k+1}-q_k)+(\dot{q}_k+\dot{q}_{k+1})T_k}{T_k^3}.
+\end{align}
+
+A mesma velocidade $\dot{q}_k$ é utilizada como condição final do trecho anterior e condição inicial do trecho seguinte. Esse compartilhamento garante continuidade de posição e velocidade nos pontos intermediários. As acelerações são obtidas pela segunda derivada dos polinômios e não são impostas como condições de contorno.
 
 Os coeficientes calculados são então utilizados para determinar a evolução temporal das variáveis articulares durante a execução do movimento.
+
+\subsection{Sugestão das Velocidades Intermediárias}
+
+Ao serem criados, o primeiro e o último ponto recebem velocidade nula como valor inicial, permanecendo editáveis. Quando a inserção de um novo ponto transforma o ponto anterior em intermediário, o sistema calcula uma sugestão de velocidade para cada junta. Considerando
+
+\begin{align}
+m_{k-1} &= \frac{q_k-q_{k-1}}{T_{k-1}}, &
+m_k &= \frac{q_{k+1}-q_k}{T_k},
+\end{align}
+
+se $m_{k-1}m_k\leq0$, indicando parada ou inversão do sentido do movimento, adota-se $\dot{q}_k=0$. Caso as inclinações tenham o mesmo sentido, utiliza-se a média ponderada
+
+\begin{equation}
+\dot{q}_k=
+\frac{T_km_{k-1}+T_{k-1}m_k}{T_{k-1}+T_k}.
+\end{equation}
+
+A sugestão é realizada uma única vez. Uma velocidade alterada manualmente pelo usuário passa a ser identificada como manual e não é sobrescrita automaticamente pela inserção de novos pontos.
 
 \subsection{Execução Temporal do Movimento}
 
@@ -384,7 +422,7 @@ A interface gráfica do simulador foi desenvolvida com o objetivo de permitir a 
 
 \subsection{Organização da Tela}
 
-A interface principal do simulador é dividida em duas regiões principais. A região superior é destinada à visualização tridimensional do manipulador, enquanto a região inferior concentra os elementos auxiliares de interação e análise, como gráficos, dados e instruções de uso.
+A interface principal do simulador é dividida em duas regiões principais. A região superior é destinada à visualização tridimensional do manipulador, enquanto a região inferior concentra os elementos auxiliares de interação e análise, organizados nas abas de gráficos, programação, instruções e dados.
 
 Essa organização permite que o usuário acompanhe continuamente a movimentação do manipulador no ambiente 3D ao mesmo tempo em que observa informações numéricas e gráficas associadas ao movimento executado.
 
@@ -398,12 +436,21 @@ No modo de controle por juntas, a interface apresenta um conjunto de \textit{sli
 
 No modo de controle cartesiano, o usuário pode definir diretamente o posicionamento desejado do efetuador final. Nesse caso, a interface disponibiliza controles deslizantes para as coordenadas espaciais $x$, $y$ e $z$, bem como para os ângulos de orientação \textit{yaw}, \textit{pitch} e \textit{roll}. 
 
-Sempre que um desses parâmetros é alterado, o algoritmo de cinemática inversa é executado automaticamente, calculando o conjunto de variáveis articulares correspondente à pose especificada. Os valores resultantes são então aplicados ao manipulador, atualizando imediatamente sua configuração.
+Sempre que um desses parâmetros é alterado, o algoritmo de cinemática inversa é executado automaticamente, calculando o conjunto de variáveis articulares correspondente ao posicionamento especificado . Os valores resultantes são então aplicados ao manipulador, atualizando imediatamente sua configuração.
 
 A possibilidade de alternância entre os dois modos de operação permite ao usuário explorar tanto o comportamento individual das juntas quanto a relação entre o espaço articular e o espaço cartesiano, contribuindo para o caráter didático da ferramenta.
 \subsection{Programação de Trajetórias}
 
-A interface também permite a definição de trajetórias por meio do registro sequencial de pontos. O usuário pode posicionar o manipulador em uma configuração desejada e armazená-la como parte de uma rotina de movimento. Para cada ponto registrado, é possível definir o tempo de transição até o próximo ponto da sequência.
+A interface também permite a definição de trajetórias por meio do registro sequencial de pontos. O usuário pode posicionar o manipulador em uma configuração desejada e armazená-la como parte de uma rotina de movimento. Na aba \textit{Programação}, seis seletores permitem escolher a junta cujos dados serão apresentados. Cada linha da tabela corresponde a um ponto e contém a duração do trecho anterior, o tempo acumulado, a posição angular e a velocidade de contorno.
+
+Os valores de duração, posição e velocidade podem ser alterados diretamente na tabela. Ao selecionar uma linha, o manipulador assume a configuração correspondente e o marcador cartesiano do ponto é destacado, fornecendo uma pré-visualização da condição programada. Durante a execução da rotina, os campos da tabela e os comandos de adição e limpeza permanecem bloqueados para evitar modificações concorrentes nos dados da trajetória.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1 \textwidth]{Imagens/janela_programacao.png}
+    \caption{}
+    \label{fig:programacao_trajetoria}
+\end{figure}
 
 Uma vez definida a rotina, o simulador executa automaticamente o movimento interpolado entre os pontos armazenados, segundo a metodologia descrita na Seção 3.6. A interface disponibiliza ainda comandos para iniciar, interromper e limpar a trajetória programada.
 
@@ -411,7 +458,7 @@ Uma vez definida a rotina, o simulador executa automaticamente o movimento inter
 
 Na região inferior da interface, o simulador apresenta três gráficos principais, correspondentes às variáveis de posição, velocidade e aceleração das seis juntas do manipulador. Esses gráficos são atualizados em tempo real durante a execução de uma trajetória programada.
 
-A visualização simultânea dessas grandezas permite acompanhar não apenas a evolução angular das juntas, mas também a suavidade do movimento gerado, contribuindo para a compreensão do comportamento cinemático do sistema.
+A visualização simultânea dessas grandezas permite acompanhar não apenas a evolução angular das juntas, mas também verificar a continuidade da posição e da velocidade nos pontos intermediários. O gráfico de aceleração permite ainda observar as possíveis descontinuidades dessa grandeza entre segmentos cúbicos consecutivos.
 
 \subsection{Exibição da Matriz de Transformação}
 

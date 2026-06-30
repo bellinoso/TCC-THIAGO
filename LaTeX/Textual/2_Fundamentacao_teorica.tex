@@ -41,11 +41,11 @@ Matematicamente, o estado geométrico de um manipulador pode ser descrito por do
     \item \textbf{Espaço cartesiano (ou operacional)}: definido pela posição e orientação do efetuador final em relação a um sistema de coordenadas inercial.
 \end{itemize}
 
-A relação entre esses dois espaços constitui o problema central da cinemática de manipuladores. A determinação da pose (posição e orientação) do efetuador a partir das variáveis articulares caracteriza a \textbf{Cinemática Direta}, enquanto o processo inverso define a \textbf{Cinemática Inversa}.
+A relação entre esses dois espaços constitui o problema central da cinemática de manipuladores. A determinação da do posicionamento (posição e orientação) do efetuador a partir das variáveis articulares caracteriza a \textbf{Cinemática Direta}, enquanto o processo inverso define a \textbf{Cinemática Inversa}.
 
 Para manipuladores industriais de seis graus de liberdade, como os amplamente empregados em aplicações de manufatura, é possível posicionar e orientar rigidamente o efetuador no espaço tridimensional, uma vez que seis parâmetros independentes são necessários para descrever completamente o posicionamento de um corpo rígido (três parâmetros de posição e três de orientação).
 
-No presente trabalho, considera-se um manipulador serial de seis graus de liberdade modelado como uma cadeia cinemática aberta composta exclusivamente por juntas de rotação. Essa configuração é particularmente adequada para a aplicação da Convenção de Denavit--Hartenberg e para a implementação computacional da modelagem cinemática, conforme será desenvolvido nas seções seguintes.
+No presente trabalho, considera-se um manipulador serial de seis graus de liberdade modelado como uma cadeia cinemática aberta composta exclusivamente por juntas de rotação. Essa configuração é particularmente adequada para a aplicação da Convenção de \textit{Denavit-Hartenberg} e para a implementação computacional da modelagem cinemática, conforme será desenvolvido nas seções seguintes.
 
 
 
@@ -85,10 +85,18 @@ De forma geral, em um manipulador serial com $n$ elos, o posicionamento do efetu
 ^0\mathbf{T}_n = \, ^0\mathbf{T}_1 \, ^1\mathbf{T}_2 \, \cdots \, ^{n-1}\mathbf{T}_n
 \end{equation}
 
-Essa propriedade torna as transformações homogêneas fundamentais para a formulação da Cinemática Direta e para a aplicação da Convenção de Denavit--Hartenberg, apresentada na seção seguinte.
-\section{Convenção de Denavit--Hartenberg}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8 \textwidth]{Imagens/robo n gdl.png}
+    \caption{Manipulador com n graus de liberdade.\cite{romano2024_parte2}}
+    \label{fig:esquema_dh}
+\end{figure}
 
-Embora as transformações homogêneas permitam descrever a relação entre sistemas de coordenadas arbitrários, a modelagem direta de manipuladores com múltiplos elos pode tornar-se trabalhosa se não houver um procedimento sistemático para definir esses sistemas de referência. A Convenção de Denavit--Hartenberg (DH) estabelece uma metodologia padronizada para a atribuição de sistemas de coordenadas aos elos de uma cadeia cinemática aberta, simplificando a obtenção das transformações homogêneas sucessivas.
+Essa propriedade torna as transformações homogêneas fundamentais para a formulação da Cinemática Direta e para a aplicação da Convenção de \textit{Denavit-Hartenberg}, apresentada na seção seguinte.
+
+\section{Convenção de \textit{Denavit-Hartenberg}}
+
+Embora as transformações homogêneas permitam descrever a relação entre sistemas de coordenadas arbitrários, a modelagem direta de manipuladores com múltiplos elos pode tornar-se trabalhosa se não houver um procedimento sistemático para definir esses sistemas de referência. A Convenção de \textit{Denavit-Hartenberg} (DH) estabelece uma metodologia padronizada para a atribuição de sistemas de coordenadas aos elos de uma cadeia cinemática aberta, simplificando a obtenção das transformações homogêneas sucessivas.
 
 Para cada elo $i$ de um manipulador serial, são definidos quatro parâmetros:
 
@@ -125,7 +133,7 @@ Dessa forma, a modelagem cinemática de um manipulador com $n$ elos pode ser rea
 \label{T_DH}
 \end{equation}
 
-A Convenção de Denavit--Hartenberg constitui, portanto, uma ferramenta fundamental para a formulação da Cinemática Direta de manipuladores seriais, sendo amplamente empregada na análise e implementação computacional desses sistemas.
+A Convenção de \textit{Denavit-Hartenberg} constitui, portanto, uma ferramenta fundamental para a formulação da Cinemática Direta de manipuladores seriais, sendo amplamente empregada na análise e implementação computacional desses sistemas.
 
 \section{Cinemática Direta}
 
@@ -137,7 +145,7 @@ A Cinemática Direta consiste na determinação da posição e orientação do e
 
 onde $\mathbf{q} = [q_1, q_2, \dots, q_n]^T$ representa o vetor de coordenadas generalizadas e $^0\mathbf{T}_n$ é a matriz de transformação homogênea que descreve o posicionamento do elo terminal em relação ao sistema de referência fixo à base.
 
-Utilizando a Convenção de Denavit--Hartenberg, a transformação completa do efetuador final em relação à base é obtida pelo produto sucessivo das matrizes $^{i-1}\mathbf{T}_i$, conforme a Equação (\ref{T_DH}). A matriz resultante pode ser escrita na forma:
+Utilizando a Convenção de \textit{Denavit-Hartenberg}, a transformação completa do efetuador final em relação à base é obtida pelo produto sucessivo das matrizes $^{i-1}\mathbf{T}_i$, conforme a Equação (\ref{T_DH}). A matriz resultante pode ser escrita na forma:
 
 \begin{equation}
 ^0\mathbf{T}_n =
@@ -180,30 +188,72 @@ Esse desacoplamento reduz significativamente a complexidade do problema, permiti
 
 Após a determinação das configurações articulares necessárias para atingir determinadas poses no espaço cartesiano, torna-se necessário definir como o manipulador irá se mover entre essas configurações ao longo do tempo. Esse processo é denominado planejamento de trajetória.
 
-O planejamento pode ser realizado tanto no espaço cartesiano quanto no espaço das juntas. No presente trabalho, considera-se a interpolação no espaço de juntas, em que cada variável $q_i(t)$ é descrita como uma função contínua do tempo.
+O planejamento pode ser realizado tanto no espaço cartesiano quanto no espaço das juntas. No presente trabalho, considera-se a interpolação no espaço de juntas, em que cada variável $q_i(t)$ é descrita em função do tempo. Para uma trajetória formada por vários segmentos, busca-se garantir, nas junções entre trechos consecutivos, a continuidade da posição e da velocidade. A aceleração é calculada a partir da segunda derivada do polinômio e pode apresentar descontinuidades nos pontos intermediários.
 
 Uma abordagem amplamente empregada consiste na utilização de polinômios para garantir continuidade de posição e velocidade ao longo do movimento. Entre as alternativas possíveis, o polinômio cúbico apresenta-se como solução adequada quando se deseja impor condições de posição inicial e final, bem como velocidades inicial e final especificadas.
 
-Assim, para uma junta genérica $q(t)$, pode-se escrever:
+Assim, para uma junta genérica $q(t)$, pode-se escrever uma função do terceiro grau:
 
 \begin{equation}
-q(t) = a_0 + a_1 t + a_2 t^2 + a_3 t^3
+q(t) = a_0 + a_1 t + a_2 t^2 + a_3 t^3 
+\quad \longrightarrow \quad \text{Posição}
 \end{equation}
 
-Os coeficientes do polinômio são determinados a partir das condições de contorno:
+\begin{equation}
+\dot{q}(t) = a_1 + 2a_2 t + 3a_3 t^2 
+\quad \longrightarrow \quad \text{Velocidade}
+\end{equation}
+
+\begin{equation}
+\ddot{q}(t) = 2a_2 + 6a_3 t 
+\quad \longrightarrow \quad \text{Aceleração}
+\end{equation}
+
+Nesse caso são necessárias quatro condições de contorno: posições e velocidades inicial e final, além do intervalo de tempo para a execução do movimento.
+
+\subsection{Polinômio cúbico com pontos intermediários}
+
+Considere uma trajetória dividida em segmentos. O trecho $k$, compreendido entre os instantes $t_k$ e $t_{k+1}$, conecta as posições articulares $q_k$ e $q_{k+1}$ com velocidades de contorno $\dot{q}_k$ e $\dot{q}_{k+1}$ \cite{romano2024_parte6}. Definindo
+
+\begin{equation}
+T_k = t_{k+1}-t_k
+\end{equation}
+
+e o tempo local $\tau=t-t_k$, com $0\leq\tau\leq T_k$, o segmento pode ser escrito como
+
+\begin{equation}
+q^{(k)}(\tau)=a_0+a_1\tau+a_2\tau^2+a_3\tau^3.
+\end{equation}
+
+As condições de contorno do trecho são dadas por
 
 \begin{align}
-q(0) &= q_0 \\
-q(T) &= q_f \\
-\dot{q}(0) &= \dot{q}_0 \\
-\dot{q}(T) &= \dot{q}_f
+q^{(k)}(0) &= q_k, & q^{(k)}(T_k) &= q_{k+1}, \\
+\dot{q}^{(k)}(0) &= \dot{q}_k, & \dot{q}^{(k)}(T_k) &= \dot{q}_{k+1}.
 \end{align}
 
-No caso particular em que as velocidades inicial e final são nulas, obtém-se uma trajetória suave, com aceleração contínua e ausência de descontinuidades abruptas no movimento.
+A aplicação dessas condições resulta nos coeficientes
 
-Dessa forma, o planejamento de trajetória por interpolação polinomial permite gerar perfis temporais consistentes para posição, velocidade e aceleração das juntas, sendo amplamente utilizado em aplicações industriais e em simulações cinemáticas de manipuladores seriais.
+\begin{align}
+a_0 &= q_k, \\
+a_1 &= \dot{q}_k, \\
+a_2 &= \frac{3(q_{k+1}-q_k)-(2\dot{q}_k+\dot{q}_{k+1})T_k}{T_k^2}, \\
+a_3 &= \frac{-2(q_{k+1}-q_k)+(\dot{q}_k+\dot{q}_{k+1})T_k}{T_k^3}.
+\end{align}
 
+Em um ponto intermediário $P_k$, a posição $q_k$ e a velocidade $\dot{q}_k$ são únicas. Esses valores são utilizados simultaneamente como condições finais do trecho $k-1$ e condições iniciais do trecho $k$. Dessa forma, os segmentos apresentam continuidade de posição e velocidade, sem impor que o manipulador pare em cada ponto intermediário.
 
+No caso particular em que $\dot{q}_k=\dot{q}_{k+1}=0$, recuperam-se os coeficientes
+
+\begin{align}
+a_0 &= q_k, & a_1 &= 0, \\
+a_2 &= \frac{3(q_{k+1}-q_k)}{T_k^2}, &
+a_3 &= -\frac{2(q_{k+1}-q_k)}{T_k^3}.
+\end{align}
+
+Dessa forma, o planejamento por interpolação polinomial cúbica permite gerar perfis temporais consistentes para as juntas e preservar a continuidade de posição e velocidade ao longo de trajetórias compostas por pontos intermediários.
+
+Cabe destacar que o polinômio cúbico não é a única função possível para o planejamento de trajetória. A depender das condições de contorno e do grau de suavidade desejado, podem ser empregados outros modelos, como polinômios de quinto grau, que permitem impor também as acelerações inicial e final, funções lineares com trechos parabólicos e curvas \textit{spline} de terceiro ou quinto grau. Neste trabalho, o polinômio cúbico foi adotado por sua simplicidade e por atender às condições cinemáticas consideradas, embora outras funções possam ser utilizadas conforme os requisitos da aplicação.
 
 \subsection {Robôs humanóides com Inteligência Artificial (VLA)}
 

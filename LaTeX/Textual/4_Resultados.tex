@@ -28,6 +28,13 @@ A Figura \ref{fig:teste_cd} apresenta um exemplo de configuração articular apl
 \label{fig:teste_cd}
 \end{figure}
 
+A entrada de dados consiste nas variáveis de junta $\theta_1=137,60^\circ$;
+$\theta_2=164,80^\circ$;
+$\theta_3=-218.60^\circ$;
+$\theta_4=219.20^\circ$;
+$\theta_5=-70.00^\circ$;
+$\theta_6=185,60^\circ$.
+
 A partir dessa configuração, o simulador calcula automaticamente a matriz de transformação homogênea do efetuador final, exibida na interface. O resultado obtido é consistente com a modelagem baseada na Convenção de Denavit–Hartenberg apresentada no Capítulo 2.
 
 \section{Testes de Cinemática Inversa}
@@ -48,9 +55,9 @@ A Figura \ref{fig:teste_ci} apresenta um exemplo de pose definida pelo usuário 
 No exemplo apresentado, o usuário definiu a posição do efetuador final como:
 
 \begin{align}
-x &= 280.00 \\
-y &= -460.00 \\
-z &= 493.33
+x &= 280.00\,\mathrm{mm} \\
+y &= -460.00\,\mathrm{mm} \\
+z &= 493.33\,\mathrm{mm}
 \end{align}
 
 Após a execução da cinemática inversa, o simulador calcula as variáveis articulares correspondentes e atualiza a matriz de transformação homogênea global do efetuador final, exibida na interface na forma:
@@ -86,7 +93,7 @@ Em seguida, pode-se validar a orientação do efetuador final a partir dos ângu
 \text{yaw} &= 33.60^\circ
 \end{align}
 
-No simulador, esses ângulos são utilizados para compor a matriz de rotação do efetuador segundo a convenção ZYX, dada por:
+No simulador, esses ângulos são utilizados para compor a matriz de rotação do efetuador segundo a convenção ZYX no sistema de referência do elo O (inercial), dada por:
 
 \begin{equation}
 R = R_z(\text{yaw})\,R_y(\text{pitch})\,R_x(\text{roll})
@@ -132,7 +139,27 @@ Esse resultado coincide com a submatriz de rotação correspondente às três pr
 
 O simulador permite a execução de trajetórias definidas a partir de uma sequência de configurações articulares intermediárias. Para avaliar essa funcionalidade, foram programados diferentes movimentos utilizando a interpolação polinomial cúbica descrita anteriormente.
 
-A Figura \ref{fig:trajetoria_execucao} apresenta um exemplo de execução de trajetória no simulador.
+A Figura \ref{fig:trajetoria_execucao} apresenta um exemplo de execução de trajetória no simulador. A tabela \ref{tab:trajetoria} mostra os valores das variáveis para cada uma das configurações usadas no exemplo, assim como o tempo definido para cada trecho do percurso.
+
+\begin{table}[H]
+\centering
+\caption{Posicionamentos configurados ao longo da trajetória}
+\label{tab:trajetoria}
+\begin{tabular}{c c c c c c c c}
+\hline
+\textbf{Configuração} & $\boldsymbol{\theta_1}(^\circ)$ & $\boldsymbol{\theta_2}(^\circ)$ & $\boldsymbol{\theta_3}(^\circ)$ & $\boldsymbol{\theta_4}(^\circ)$ & $\boldsymbol{\theta_5}(^\circ)$ & $\boldsymbol{\theta_6}(^\circ)$ &  $\boldsymbol{\Delta t}$ (s)  \\ 
+\hline
+1 & 180.0 & 90.0 & 0.0 & 180.0 & 0.0 & 0.0 & - \\
+2 & 130.0 & 105.0 & 10.0 & 122.4 & 40.8 & 57.6 & 2 \\
+3 & 264.0 & 33.6 & 49.0 & 201.6 & 90.0 & 199.2 & 3 \\
+4 & 307.2 & 12.0 & -7.2 & 276 & 52.8 & 235.2 & 1 \\
+5 & 124.8 & 122.4 & -191.8 & 360 & -75.6 & 151.2 & 3 \\
+
+
+\hline
+\end{tabular}
+\end{table}
+
 
 \begin{figure}[H]
 \centering

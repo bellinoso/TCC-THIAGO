@@ -1,6 +1,6 @@
 \chapter{Fundamentação teórica}
 O desenvolvimento de um sistema para modelagem e visualização de um manipulador robótico exige uma base matemática que permita descrever formalmente sua estrutura geométrica e seu comportamento cinemático, estabelecendo de maneira consistente a relação entre o espaço das juntas e o espaço cartesiano. Este capítulo apresenta os fundamentos teóricos que sustentam o modelo adotado e dão suporte às decisões de implementação descritas posteriormente.
-\section{Manipuladores Robóticos}
+\section{Manipuladores Robóticos Industriais}
 % Definição e classificação (serial/paralelo), graus de liberdade, elos e juntas, espaço de trabalho,
 % aplicações típicas, métricas (repetibilidade/precisão) e exemplos.
 
@@ -8,10 +8,26 @@ Um manipulador robótico é um sistema mecânico articulado projetado para posic
 
 Segundo a norma ISO 8372:2012, um robô industrial é definido como uma máquina manipuladora automaticamente controlada, reprogramável e multifuncional, com três ou mais eixos programáveis, podendo ter base fixa ou móvel, destinada a aplicações de automação industrial \cite{romano2024}. Essa definição enfatiza três características fundamentais: reprogramabilidade, controle automático e multiplicidade de graus de liberdade.
 
+De forma complementar, um robô é composto pelo conjunto formado por um manipulador, responsável pela movimentação e interação com o ambiente; a unidade de controle, que processa os comandos e define o comportamento do sistema; e a unidade de potência, que fornece a energia necessária para a atuação dos seus elementos. Essa composição é ilustrada na figura \ref{fig:esquema_robo}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9 \textwidth]{Imagens/esquema_robo_texto.png}
+    \caption{Composição de Robô industrial}
+    \label{fig:esquema_robo_texto}
+\end{figure}
+
+
 Do ponto de vista estrutural, um manipulador é composto por uma cadeia cinemática aberta formada por elos rígidos interconectados por juntas. O primeiro elo é denominado base, geralmente fixo ao solo ou à estrutura de suporte, enquanto o último elo sustenta o efetuador final, responsável pela interação com o ambiente. 
 
 As juntas podem ser classificadas principalmente como junta de rotação (revolução) ou junta prismática  (translação). Cada junta introduz uma variável independente de posição. O número total dessas variáveis define os graus de liberdade do manipulador. Em uma cadeia cinemática aberta típica, o número de juntas coincide com o número de graus de liberdade do sistema \cite{romano2024}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9 \textwidth]{Imagens/esquema_robo.png}
+    \caption{Robô industrial: manipulador, unidade de potência e unidade de controle.\cite{romano2024}}
+    \label{fig:esquema_robo}
+\end{figure}
 
 Matematicamente, o estado geométrico de um manipulador pode ser descrito por dois espaços distintos:
 
@@ -35,7 +51,8 @@ No presente trabalho, considera-se um manipulador serial de seis graus de liberd
 
 \section{Representações por Transformações Homogêneas}
 
-Na modelagem cinemática de manipuladores robóticos, é necessário descrever de forma consistente a posição e a orientação de cada elo em relação a um sistema de coordenadas de referência. Essa descrição é realizada por meio das transformações homogêneas, que permitem representar simultaneamente rotação e translação em uma única estrutura matricial \cite{romano2024_parte2}.
+Na modelagem cinemática de manipuladores robóticos, é necessário descrever de forma consistente a posição e a orientação de cada elo em relação a um sistema de coordenadas de referência (SCR). Essa descrição é realizada por meio das transformações homogêneas, que permitem representar simultaneamente rotação e translação em uma única estrutura matricial \cite{romano2024_parte2}.
+\abbrev{SCR}{Sistema de coordenadas de referência}
 
 Considere dois sistemas de coordenadas, $\{A\}$ e $\{B\}$, rigidamente associados a diferentes elos do manipulador. A postura do sistema $\{B\}$ em relação ao sistema $\{A\}$ pode ser descrita por uma matriz de transformação homogênea da forma:
 
@@ -48,6 +65,13 @@ Considere dois sistemas de coordenadas, $\{A\}$ e $\{B\}$, rigidamente associado
 \end{equation}
 
 onde $^A\mathbf{R}_B$ é a matriz de rotação que define a orientação relativa entre os sistemas e $\mathbf{p}_{A}^{B}$ é o vetor posição da origem de $\{B\}$ expresso em $\{A\}$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Imagens/sistema_coordenada.png}
+    \caption{SCR $\{B\}$ descrito no SCR $\{A\}$}
+    \label{fig:sistema_coordenada}
+\end{figure}
 
 A principal vantagem dessa representação é permitir a composição sucessiva de transformações por meio de multiplicação matricial. Assim, considerando três sistemas de coordenadas $\{A\}$, $\{B\}$ e $\{C\}$, tem-se:
 
@@ -74,6 +98,13 @@ Para cada elo $i$ de um manipulador serial, são definidos quatro parâmetros:
     \item $a_i$: comprimento do elo, medido ao longo do eixo $x_i$;
     \item $\alpha_i$: ângulo de torção entre os eixos $z_{i-1}$ e $z_i$, medido em torno de $x_i$.
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8 \textwidth]{Imagens/esquema_dh.png}
+    \caption{Notação DH para cadeia cinemática.\cite{parametroDH}}
+    \label{fig:esquema_dh}
+\end{figure}
 
 Esses parâmetros permitem descrever completamente a transformação entre os sistemas de coordenadas $\{i-1\}$ e $\{i\}$ por meio da matriz homogênea:
 
@@ -177,16 +208,25 @@ Dessa forma, o planejamento de trajetória por interpolação polinomial permite
 \subsection {Robôs humanóides com Inteligência Artificial (VLA)}
 
 
-\textcolor{red}{A tendência recente de emprego de robôs humanóides na execução de tarefas industriais, resultou no desenvolvimento de uma nova geração de modelos de inteligência artificial que integram três capacidades fundamentais em um único sistema para dar "inteligência geral" a estes robôs. Estes modelos são denominados VLA (\textit{Vision-Language-Action}) ou Visão-Linguagem-Ação.}
+A tendência recente de emprego de robôs humanóides na execução de tarefas industriais, resultou no desenvolvimento de uma nova geração de modelos de inteligência artificial que integram três capacidades fundamentais em um único sistema para dar "inteligência geral" a estes robôs. Estes modelos são denominados VLA (\textit{Vision-Language-Action}) ou Visão-Linguagem-Ação.
 \abbrev{VLA}{Vision-Language-Action}
 
-\textcolor{red}{\textbf{Visão:} O robô utiliza câmeras, LiDAR (\textit{Light Detection and Ranging}) e algoritmos de visão computacional para compreender o ambiente ao seu redor, identificando objetos e obstáculos.}
-\abbrev{LiDAR}{Vision-Language-Action}
+\textbf{Visão:} O robô utiliza câmeras, LiDAR (\textit{Light Detection and Ranging}) e algoritmos de visão computacional para compreender o ambiente ao seu redor, identificando objetos e obstáculos.
+\abbrev{LiDAR}{Light Detection and Ranging}
 
-\textcolor{red}{\textbf{Linguagem:} O sistema processa instruções em linguagem natural (texto ou fala), permitindo que humanos deem comandos complexos como "pegue a caneca vermelha e coloque-a na mesa".}
+\textbf{Linguagem:} O sistema processa instruções em linguagem natural (texto ou fala), permitindo que humanos deem comandos complexos como "pegue a caneca vermelha e coloque-a na mesa".
 
-\textcolor{red}{\textbf{Ação:} O modelo traduz a compreensão visual e as instruções verbais diretamente em comandos motores, controlando os movimentos físicos do robô de forma coordenada.}
+\textbf{Ação:} O modelo traduz a compreensão visual e as instruções verbais diretamente em comandos motores, controlando os movimentos físicos do robô de forma coordenada.
 
-\textcolor{red}{Ao contrário da robótica tradicional, os modelos VLA permitem que os robôs aprendam a realizar tarefas e se adaptem a novas situações de forma mais flexível.}
+Ao contrário da robótica tradicional, os modelos VLA permitem que os robôs aprendam a realizar tarefas e se adaptem a novas situações de forma mais flexível.
 
-\textcolor{red}{Neste projeto de graduação serão abordados somente os modelos de planejamento de trajetórias baseados em códigos de programação, sem considerar os modelos VLA.}
+Neste projeto de graduação serão abordados somente os modelos de planejamento de trajetórias baseados em códigos de programação, sem considerar os modelos VLA.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Imagens/Boston Dymanics.png}
+    \caption{Robô humanoide da Boston Dynamics em operação \cite{bostondynamics_atlas2025} }
+    \label{fig:Boston Dymanics}
+\end{figure}
+
+%https://www.youtube.com/watch?v=gS4rOqNDTBk

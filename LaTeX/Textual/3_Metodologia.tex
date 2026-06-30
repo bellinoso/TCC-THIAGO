@@ -37,18 +37,28 @@ Essa divisão favorece a organização do código, facilita a manutenção e per
 O funcionamento do sistema segue o seguinte fluxo geral:
 
 \begin{enumerate}
-    \item O usuário interage com a interface por meio de controles deslizantes ou comandos de execução de trajetória;
-    \item As variáveis articulares são atualizadas conforme a entrada fornecida;
+    \item O usuário interage com a interface por meio de controles deslizantes ou comandos de execução de trajetória. Essa interação pode ser por meio da cinemática direta ou inversa;
+    \item Caso o comando do usuário seja por meio da cinemática inversa, os valores das juntas são calculados;
+    \item As variáveis articulares são atualizadas;
     \item A nova configuração do manipulador é aplicada à estrutura hierárquica da cena 3D;
     \item O posicionamento do efetuador final é recalculado e, quando aplicável, utilizado na atualização dos gráficos;
     \item O motor gráfico renderiza a cena atualizada em tempo real.
 \end{enumerate}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{Imagens/flowchart.png}
+    \caption{Fluxograma do funcionamento do programa }
+    \label{fig:flowchart}
+\end{figure}
+
+%https://miro.com/app/board/uXjVHfj6woE=/
+
 Esse processo ocorre dentro do laço de renderização do motor gráfico, garantindo atualização contínua da cena e dos elementos gráficos.
 
 \subsection{Sistema de Coordenadas e Estrutura Hierárquica}
 
-A cena tridimensional foi configurada utilizando um sistema de coordenadas de mão direita, com o eixo $z$ orientado verticalmente, em concordância com a modelagem cinemática adotada.
+A cena tridimensional foi configurada utilizando um sistema de coordenadas de x, y e z, com o eixo $z$ orientado verticalmente, em concordância com a modelagem cinemática adotada.
 
 A estrutura do manipulador foi implementada por meio de uma hierarquia de nós (\textit{TransformNodes}), em que cada junta é modelada como um elemento pai do elo subsequente. Dessa forma, as transformações aplicadas a uma junta propagam-se automaticamente para os elos descendentes, reproduzindo computacionalmente a cadeia cinemática aberta descrita na fundamentação teórica.
 
@@ -116,7 +126,7 @@ Foram modelados os principais elementos estruturais do manipulador, incluindo ba
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.85\textwidth]{Imagens/OnShape_Assembly.png}
+    \includegraphics[width=1\textwidth]{Imagens/OnShape_Assembly.png}
     \caption{Modelo CAD do manipulador serial 6R desenvolvido no Onshape.}
     \label{fig:OnShape_Assembly}
 \end{figure}

@@ -8,7 +8,7 @@ A Figura \ref{fig:interface_completa_final} apresenta a interface principal do s
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{Imagens/interface_completa_final.png}
+\includegraphics[width=1\textwidth]{Imagens/interface_completa_final.png}
 \caption{Interface principal do simulador desenvolvido.}
 \label{fig:interface_completa_final}
 \end{figure}
@@ -32,7 +32,7 @@ A partir dessa configuração, o simulador calcula automaticamente a matriz de t
 
 \section{Testes de Cinemática Inversa}
 
-A validação da implementação da cinemática inversa foi realizada por meio da comparação entre a pose cartesiana definida pelo usuário e a matriz de transformação homogênea resultante exibida pelo simulador.
+A validação da implementação da cinemática inversa foi realizada por meio da comparação entre o posicionamento cartesiano definida pelo usuário e a matriz de transformação homogênea resultante exibida pelo simulador.
 
 No modo de controle cartesiano, o usuário define diretamente a posição do efetuador final por meio das coordenadas $x$, $y$ e $z$, bem como sua orientação utilizando os ângulos \textit{roll}, \textit{pitch} e \textit{yaw}. A partir desses valores, o algoritmo de cinemática inversa calcula automaticamente o conjunto correspondente de variáveis articulares, que são então aplicadas ao manipulador.
 
@@ -41,7 +41,7 @@ A Figura \ref{fig:teste_ci} apresenta um exemplo de pose definida pelo usuário 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{Imagens/teste_ci.png}
-\caption{Exemplo de validação da cinemática inversa a partir de uma pose cartesiana especificada pelo usuário.}
+\caption{Exemplo de validação da cinemática inversa a partir de um posicionamento cartesiano especificado pelo usuário.}
 \label{fig:teste_ci}
 \end{figure}
 
@@ -126,7 +126,7 @@ R =
 \end{bmatrix}
 \end{equation}
 
-Esse resultado coincide com a submatriz de rotação correspondente às três primeiras colunas e três primeiras linhas da matriz de transformação homogênea exibida na interface do simulador. Dessa forma, confirma-se que a orientação especificada pelos controles \textit{roll}, \textit{pitch} e \textit{yaw} está corretamente refletida na pose final calculada pelo sistema.
+Esse resultado coincide com a submatriz de rotação correspondente às três primeiras colunas e três primeiras linhas da matriz de transformação homogênea exibida na interface do simulador. Dessa forma, confirma-se que a orientação especificada pelos controles \textit{roll}, \textit{pitch} e \textit{yaw} está corretamente refletida no posicionamento final calculado pelo sistema.
 
 \section{Execução de Trajetórias}
 
@@ -151,7 +151,7 @@ A Figura \ref{fig:grafico_trajetoria} apresenta os gráficos gerados após a exe
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{Imagens/graficos_exemplo.png}
+\includegraphics[width=0.8 \textwidth]{Imagens/graficos_exemplo.png}
 \caption{Perfis de posição, velocidade e aceleração gerados durante a execução de uma trajetória.}
 \label{fig:grafico_trajetoria}
 \end{figure}

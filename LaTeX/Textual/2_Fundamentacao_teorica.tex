@@ -20,14 +20,14 @@ Matematicamente, o estado geométrico de um manipulador pode ser descrito por do
     \begin{equation}
         \mathbf{q} = [q_1, q_2, \dots, q_n]^T
     \end{equation}
-    onde cada $q_i$ representa a variável associada à junta $i$;
+    onde cada $q_i$ representa a variável associada à junta $i$, sendo uma variável de rotação ou translação em função do tempo;
 
     \item \textbf{Espaço cartesiano (ou operacional)}: definido pela posição e orientação do efetuador final em relação a um sistema de coordenadas inercial.
 \end{itemize}
 
 A relação entre esses dois espaços constitui o problema central da cinemática de manipuladores. A determinação da pose (posição e orientação) do efetuador a partir das variáveis articulares caracteriza a \textbf{Cinemática Direta}, enquanto o processo inverso define a \textbf{Cinemática Inversa}.
 
-Para manipuladores industriais de seis graus de liberdade, como os amplamente empregados em aplicações de manufatura, é possível posicionar e orientar rigidamente o efetuador no espaço tridimensional, uma vez que seis parâmetros independentes são necessários para descrever completamente a pose de um corpo rígido (três parâmetros de posição e três de orientação).
+Para manipuladores industriais de seis graus de liberdade, como os amplamente empregados em aplicações de manufatura, é possível posicionar e orientar rigidamente o efetuador no espaço tridimensional, uma vez que seis parâmetros independentes são necessários para descrever completamente o posicionamento de um corpo rígido (três parâmetros de posição e três de orientação).
 
 No presente trabalho, considera-se um manipulador serial de seis graus de liberdade modelado como uma cadeia cinemática aberta composta exclusivamente por juntas de rotação. Essa configuração é particularmente adequada para a aplicação da Convenção de Denavit--Hartenberg e para a implementação computacional da modelagem cinemática, conforme será desenvolvido nas seções seguintes.
 
@@ -55,7 +55,7 @@ A principal vantagem dessa representação é permitir a composição sucessiva 
 ^A\mathbf{T}_C = \, ^A\mathbf{T}_B \, ^B\mathbf{T}_C
 \end{equation}
 
-De forma geral, em um manipulador serial com $n$ elos, a pose do efetuador final em relação ao sistema de referência pode ser obtida pelo produto encadeado das transformações individuais:
+De forma geral, em um manipulador serial com $n$ elos, o posicionamento do efetuador final em relação ao sistema de referência pode ser obtido pelo produto encadeado das transformações individuais:
 
 \begin{equation}
 ^0\mathbf{T}_n = \, ^0\mathbf{T}_1 \, ^1\mathbf{T}_2 \, \cdots \, ^{n-1}\mathbf{T}_n
@@ -87,7 +87,7 @@ Esses parâmetros permitem descrever completamente a transformação entre os si
 \end{bmatrix}
 \end{equation}
 
-Dessa forma, a modelagem cinemática de um manipulador com $n$ elos pode ser realizada a partir da construção de uma tabela contendo os quatro parâmetros DH para cada elo. A pose do efetuador final em relação ao sistema de referência é então obtida pelo produto sucessivo das matrizes individuais:
+Dessa forma, a modelagem cinemática de um manipulador com $n$ elos pode ser realizada a partir da construção de uma tabela contendo os quatro parâmetros DH para cada elo. O posicionamento do efetuador final em relação ao sistema de referência é então obtido pelo produto sucessivo das matrizes individuais:
 
 \begin{equation}
 ^0\mathbf{T}_n = \prod_{i=1}^{n} \, ^{i-1}\mathbf{T}_i
@@ -104,25 +104,25 @@ A Cinemática Direta consiste na determinação da posição e orientação do e
 \mathbf{q} \longrightarrow \, ^0\mathbf{T}_n
 \end{equation}
 
-onde $\mathbf{q} = [q_1, q_2, \dots, q_n]^T$ representa o vetor de coordenadas generalizadas e $^0\mathbf{T}_n$ é a matriz de transformação homogênea que descreve a pose do elo terminal em relação ao sistema de referência fixo à base.
+onde $\mathbf{q} = [q_1, q_2, \dots, q_n]^T$ representa o vetor de coordenadas generalizadas e $^0\mathbf{T}_n$ é a matriz de transformação homogênea que descreve o posicionamento do elo terminal em relação ao sistema de referência fixo à base.
 
 Utilizando a Convenção de Denavit--Hartenberg, a transformação completa do efetuador final em relação à base é obtida pelo produto sucessivo das matrizes $^{i-1}\mathbf{T}_i$, conforme a Equação (\ref{T_DH}). A matriz resultante pode ser escrita na forma:
 
 \begin{equation}
 ^0\mathbf{T}_n =
 \begin{bmatrix}
-\mathbf{R} & \mathbf{p} \\
+^0\mathbf{R}_n & ^0\mathbf{p}_n \\
 \mathbf{0}_{1\times3} & 1
 \end{bmatrix}
 \end{equation}
 
-onde $\mathbf{R}$ representa a orientação do efetuador final em relação ao sistema de referência e $\mathbf{p}$ representa sua posição no espaço cartesiano.
+onde $^0\mathbf{R}_n$ representa a orientação do efetuador final em relação ao sistema de referência e $^0\mathbf{p}_n$ representa sua posição no espaço cartesiano.
 
 Portanto, a Cinemática Direta fornece uma relação explícita entre as variáveis articulares e a postura espacial do manipulador, sendo etapa fundamental na análise de movimento e no controle de manipuladores seriais.
 
 \section{Cinemática Inversa}
-
-A Cinemática Inversa consiste na determinação das variáveis articulares necessárias para que o efetuador final atinja uma determinada pose desejada no espaço cartesiano. Diferentemente da Cinemática Direta, que envolve apenas a multiplicação sucessiva de matrizes homogêneas, a Cinemática Inversa conduz, em geral, a um conjunto de equações não lineares, cuja solução pode apresentar múltiplas configurações admissíveis.
+\label{sec:cinematica_inversa}
+A Cinemática Inversa consiste na determinação das variáveis articulares necessárias para que o efetuador final atinja um determinado posicionamento desejado no espaço cartesiano. Diferentemente da Cinemática Direta, que envolve apenas a multiplicação sucessiva de matrizes homogêneas, a Cinemática Inversa conduz, em geral, a um conjunto de equações não lineares, cuja solução pode apresentar múltiplas configurações admissíveis.
 
 Matematicamente, o problema pode ser descrito como o mapeamento inverso:
 
@@ -130,7 +130,7 @@ Matematicamente, o problema pode ser descrito como o mapeamento inverso:
 ^0\mathbf{T}_n \longrightarrow \mathbf{q}
 \end{equation}
 
-onde $^0\mathbf{T}_n$ representa a transformação homogênea desejada do efetuador final e $\mathbf{q} = [q_1, q_2, \dots, q_n]^T$ é o vetor de coordenadas articulares.
+onde $^0\mathbf{T}_n$ representa a transformação homogênea desejada do efetuador final e $\mathbf{q} = [q_1, q_2, \dots, q_n]^T$ é o vetor de coordenadas de juntas.
 
 De modo geral, não existe uma solução analítica simples para manipuladores arbitrários, sendo frequentemente empregados métodos numéricos iterativos. Entretanto, para uma classe importante de manipuladores industriais com seis graus de liberdade e punho esférico, isto é, quando os três últimos eixos de rotação intersectam-se em um único ponto, é possível obter uma solução analítica por meio do desacoplamento entre posição e orientação.
 
@@ -138,11 +138,18 @@ Nessa abordagem, o problema é dividido em duas etapas. Primeiramente, determina
 
 Esse desacoplamento reduz significativamente a complexidade do problema, permitindo a obtenção de soluções fechadas para manipuladores do tipo 6R amplamente utilizados em aplicações industriais. Ainda assim, podem existir múltiplas soluções geométricas válidas, correspondentes, por exemplo, a configurações do tipo ``cotovelo para cima'' ou ``cotovelo para baixo'', bem como configurações distintas do punho.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7 \textwidth]{Imagens/cotovelo_1.png}
+    \caption{Múltiplas soluções}
+    \label{fig:cotovelo_1}
+\end{figure}
+
 \section{Planejamento de Trajetória}
 
 Após a determinação das configurações articulares necessárias para atingir determinadas poses no espaço cartesiano, torna-se necessário definir como o manipulador irá se mover entre essas configurações ao longo do tempo. Esse processo é denominado planejamento de trajetória.
 
-O planejamento pode ser realizado tanto no espaço cartesiano quanto no espaço das juntas. No presente trabalho, considera-se a interpolação no espaço articular, em que cada variável $q_i(t)$ é descrita como uma função contínua do tempo.
+O planejamento pode ser realizado tanto no espaço cartesiano quanto no espaço das juntas. No presente trabalho, considera-se a interpolação no espaço de juntas, em que cada variável $q_i(t)$ é descrita como uma função contínua do tempo.
 
 Uma abordagem amplamente empregada consiste na utilização de polinômios para garantir continuidade de posição e velocidade ao longo do movimento. Entre as alternativas possíveis, o polinômio cúbico apresenta-se como solução adequada quando se deseja impor condições de posição inicial e final, bem como velocidades inicial e final especificadas.
 
@@ -164,3 +171,22 @@ q(T) &= q_f \\
 No caso particular em que as velocidades inicial e final são nulas, obtém-se uma trajetória suave, com aceleração contínua e ausência de descontinuidades abruptas no movimento.
 
 Dessa forma, o planejamento de trajetória por interpolação polinomial permite gerar perfis temporais consistentes para posição, velocidade e aceleração das juntas, sendo amplamente utilizado em aplicações industriais e em simulações cinemáticas de manipuladores seriais.
+
+
+
+\subsection {Robôs humanóides com Inteligência Artificial (VLA)}
+
+
+\textcolor{red}{A tendência recente de emprego de robôs humanóides na execução de tarefas industriais, resultou no desenvolvimento de uma nova geração de modelos de inteligência artificial que integram três capacidades fundamentais em um único sistema para dar "inteligência geral" a estes robôs. Estes modelos são denominados VLA (\textit{Vision-Language-Action}) ou Visão-Linguagem-Ação.}
+\abbrev{VLA}{Vision-Language-Action}
+
+\textcolor{red}{\textbf{Visão:} O robô utiliza câmeras, LiDAR (\textit{Light Detection and Ranging}) e algoritmos de visão computacional para compreender o ambiente ao seu redor, identificando objetos e obstáculos.}
+\abbrev{LiDAR}{Vision-Language-Action}
+
+\textcolor{red}{\textbf{Linguagem:} O sistema processa instruções em linguagem natural (texto ou fala), permitindo que humanos deem comandos complexos como "pegue a caneca vermelha e coloque-a na mesa".}
+
+\textcolor{red}{\textbf{Ação:} O modelo traduz a compreensão visual e as instruções verbais diretamente em comandos motores, controlando os movimentos físicos do robô de forma coordenada.}
+
+\textcolor{red}{Ao contrário da robótica tradicional, os modelos VLA permitem que os robôs aprendam a realizar tarefas e se adaptem a novas situações de forma mais flexível.}
+
+\textcolor{red}{Neste projeto de graduação serão abordados somente os modelos de planejamento de trajetórias baseados em códigos de programação, sem considerar os modelos VLA.}

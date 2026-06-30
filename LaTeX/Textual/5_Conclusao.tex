@@ -4,7 +4,7 @@ Este trabalho apresentou o desenvolvimento de um simulador interativo para estud
 
 O sistema desenvolvido integra diferentes aspectos fundamentais da robótica manipuladora. Inicialmente, foi realizada a modelagem cinemática do manipulador com base na Convenção de Denavit--Hartenberg, permitindo a descrição matemática da cadeia cinemática e a obtenção da transformação homogênea do efetuador final. A partir dessa modelagem, foram implementados os algoritmos de cinemática direta e cinemática inversa, sendo esta última baseada em uma solução analítica viabilizada pela configuração de punho esférico do manipulador.
 
-Além da modelagem cinemática, o simulador incorpora funcionalidades de visualização e interação que permitem ao usuário explorar o comportamento do manipulador de forma intuitiva. O sistema possibilita tanto o controle direto das variáveis articulares quanto o controle cartesiano do efetuador final, permitindo observar em tempo real a relação entre a configuração das juntas e a pose resultante do manipulador.
+Além da modelagem cinemática, o simulador incorpora funcionalidades de visualização e interação que permitem ao usuário explorar o comportamento do manipulador de forma intuitiva. O sistema possibilita tanto o controle direto das variáveis articulares quanto o controle cartesiano do efetuador final, permitindo observar em tempo real a relação entre a configuração das juntas e o posicionamento resultante do manipulador.
 
 Também foi implementado um mecanismo de planejamento de trajetória baseado em interpolação polinomial cúbica no espaço das juntas. Essa abordagem permite a geração de movimentos suaves entre diferentes configurações articulares, possibilitando a visualização simultânea dos perfis de posição, velocidade e aceleração das juntas ao longo do tempo.
 
@@ -21,6 +21,25 @@ A possibilidade de alternar entre controle no espaço das juntas e controle no e
 Adicionalmente, a geração de trajetórias e a visualização dos perfis de posição, velocidade e aceleração das juntas contribuem para a compreensão do planejamento de movimento em manipuladores seriais.
 
 Dessa forma, a ferramenta pode ser utilizada como recurso complementar na disciplina de Automação e Robótica, auxiliando na interpretação visual de conceitos que frequentemente são apresentados de forma predominantemente matemática.
+
+\section{Simulação de gêmeos digitais}
+
+\textcolor{red}{O conceito de gêmeo digital refere-se à criação de um modelo virtual que representa um sistema físico real. No contexto da robótica, isso envolve a construção de uma simulação capaz de reproduzir o comportamento de um manipulador, incluindo sua estrutura mecânica, movimentos e condições operacionais.}
+
+\textcolor{red}{O uso de gêmeos digitais permite a realização de testes em ambiente virtual antes da implementação no sistema físico, contribuindo para a redução de riscos e a otimização de trajetórias e processos. Além disso, possibilita a identificação de gargalos operacionais, o treinamento em ambiente simulado e, em aplicações mais avançadas, a antecipação de necessidades de manutenção.}
+
+\textcolor{red}{Nesse contexto, o simulador desenvolvido neste trabalho pode ser interpretado como um passo inicial para a implementação de um gêmeo digital, uma vez que permite a análise e validação do comportamento do robô em ambiente virtual.}
+
+\textcolor{red}{Como evolução futura, o modelo pode ser integrado a um sistema físico por meio da utilização de dados em tempo real, estabelecendo uma correspondência entre o modelo virtual e o robô real. Essa integração permitiria não apenas a simulação, mas também o monitoramento e a otimização contínua da operação, aproximando-se do conceito completo de gêmeo digital.}
+
+\textcolor{red}{Dessa forma, a abordagem proposta apresenta potencial para expansão em direção a aplicações mais avançadas, nas quais há integração entre simulação, dados e sistema físico.}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8 \textwidth]{Imagens/esquema_gemeo.png}
+\caption{Esquema de gêmeo digital em sistema robótico.}
+\label{fig:esquema_gemeo}
+\end{figure}
 
 \section{Limitações do Sistema}
 
@@ -41,5 +60,7 @@ Uma possível evolução do simulador consiste na implementação de algoritmos 
 Outra possibilidade consiste na definição explícita do espaço de trabalho do manipulador, incluindo restrições geométricas e limites operacionais que permitam identificar poses alcançáveis e não alcançáveis pelo robô.
 
 Também pode ser considerada a inclusão de modelos dinâmicos do manipulador, permitindo analisar esforços, torques articulares e estratégias de controle de movimento.
+
+\textcolor{red}{Adicionalmente, o simulador pode evoluir para a implementação de um gêmeo digital do manipulador, integrando o modelo virtual a dados provenientes de um sistema físico real. Essa abordagem permitiria utilizar a ferramenta não apenas para fins didáticos, mas também para simulação de cenários, testes de estratégias de controle e apoio à tomada de decisão em ambientes mais próximos de aplicações reais.}
 
 Por fim, a ferramenta desenvolvida pode ser expandida para suportar diferentes arquiteturas de manipuladores, bem como novas funcionalidades de interação e visualização, ampliando seu potencial de utilização como recurso educacional em disciplinas relacionadas à robótica e automação.

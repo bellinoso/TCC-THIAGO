@@ -1,0 +1,934 @@
+var canvas = document.getElementById("renderCanvas");
+
+var engine = null;
+var scene = null;
+var sceneToRender = null;
+var createDefaultEngine = function () { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, disableWebGL2Support: false }); };
+
+const DH = [
+  // [alpha(deg), a, d, theta(deg)]
+  [90, 100, 330, 0],
+  [0,  400,   0, 0],
+  [-90,  0,   0, 0],
+  [90,   0, 375, 0],
+  [-90,  0,   0, 0],
+  [0,    0, 200, 0]
+];
+
+var createScene =  function () {
+    var scene = new BABYLON.Scene(engine);
+
+    // O BABYLON.JS nao usa a convencao de sistema de coordenadas Z-up do CAD
+    // Necessario o comando abaixo para respeitar a regra da mao direita.
+    scene.useRightHandedSystem = true
+    
+    scene.clearColor = new BABYLON.Color4(0.2, 0.3, 0.5, 1); // RGBA values: Red, Green, Blue, Alpha
+    var camera = new BABYLON.ArcRotateCamera("Camera", BABYLON.Tools.ToRadians(45), BABYLON.Tools.ToRadians(60), 500, new BABYLON.Vector3(0, 0, 450), scene);
+    
+    camera.lowerBetaLimit = 0.1; // Limite inferior de inclinacao
+    camera.upperBetaLimit = (Math.PI / 2) * 0.99; // Limite superior de inclinacao
+    camera.lowerRadiusLimit = 500; // Limite mínimo de zoom
+    camera.radius= 1500;
+    camera.upperRadiusLimit = 5000; // Limite máximo de zoom
+    camera.wheelPrecision = 1; // Sensibilidade do scroll do mouse
+    camera.panningSensibility = 30; // Sensibilidade de arrasto do mouse
+    camera.attachControl(canvas, true); // Anexar controles ao canvas
+    //desligando controles da camera do teclado
+    camera.keysUp = [];
+    camera.keysDown = [];
+    camera.keysLeft = [];
+    camera.keysRight = [];
+    camera.upVector = new BABYLON.Vector3(0, 0, 1);  // Definindo Z como cima
+    // Cria iluminacao
+    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 0, 1), scene);
+    
+    // Reduzindo levemente a iluminacao
+    light.intensity = 0.7 ;
+    
+    // Importacao e posicionamento dos modelos
+
+    var importedMeshes = [];
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Base.stl", scene, function (newMeshes) {
+        var importedMesh = newMeshes[0];
+        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+        importedMesh.parent = base;
+        importedMesh.rotation.x = BABYLON.Tools.ToRadians(90); 
+        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+        importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+        importedMeshes.push(importedMesh);
+    });
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Waist.stl", scene, function (newMeshes) {
+        var importedMesh = newMeshes[0];
+        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+        importedMesh.parent = waist;
+        importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
+        importedMesh.rotation.z = BABYLON.Tools.ToRadians(90);
+        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+        importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+        importedMeshes.push(importedMesh);
+    });
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Arm1.stl", scene, function (newMeshes) {
+        var importedMesh = newMeshes[0];
+        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+        importedMesh.parent = arm1; 
+        importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
+        importedMesh.rotation.x = BABYLON.Tools.ToRadians(90);
+        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+        importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+        importedMeshes.push(importedMesh);
+    });
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Arm2.stl", scene, function (newMeshes) {
+        var importedMesh = newMeshes[0];
+        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+        importedMesh.parent = arm2;
+        importedMesh.rotation.x = BABYLON.Tools.ToRadians(-90);
+        importedMesh.rotation.y = BABYLON.Tools.ToRadians(90);
+        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+        importedMesh.material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+        importedMeshes.push(importedMesh);
+    });
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Wrist.stl", scene, function (newMeshes) {
+        var importedMesh = newMeshes[0];
+        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+        importedMesh.parent = wrist;
+        importedMesh.rotation.z = BABYLON.Tools.ToRadians(-90);
+        importedMesh.position.z = 250;
+        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+        importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+        importedMeshes.push(importedMesh);
+    });
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Hand_v2.stl", scene, function (newMeshes) {
+        var importedMesh = newMeshes[0];
+        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+        importedMesh.parent = hand;
+        importedMesh.rotation.x = BABYLON.Tools.ToRadians(-90);
+        importedMesh.rotation.y = BABYLON.Tools.ToRadians(-90);
+        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+        importedMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0); 
+        importedMeshes.push(importedMesh);
+    });
+    BABYLON.SceneLoader.ImportMesh("", "https://raw.githubusercontent.com/thiagobellini-debug/simulador_6dof/main/", "Claw.stl", scene, function (newMeshes) {
+        var importedMesh = newMeshes[0];
+        importedMesh.setPivotPoint(new BABYLON.Vector3(0, 0, 0));
+        importedMesh.parent = claw;
+        importedMesh.position.z = 75
+        importedMesh.material = new BABYLON.StandardMaterial("importedMeshMaterial", scene);
+        importedMesh.material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+        importedMeshes.push(importedMesh);
+    });
+
+    // Tratamento de redimensionamento da janela
+    window.addEventListener("resize", function () {
+        engine.resize();
+    });
+
+    // Objetos auxiliares para posicionamento dos eixos
+    // Os eixos sao criados por meio de objetos auxiliares invisiveis
+    // (fazendo eventuais ajustes de rotacao para alinhar o eixo do CAD)
+    var base = BABYLON.MeshBuilder.CreateBox("base", { width: 0.1, height: 0.1, depth: 0.1 }, scene);
+    var servoWaist = BABYLON.MeshBuilder.CreateBox("servoWaist", { width: 0.1, height: 0.1, depth: 0.1 }, scene);
+    servoWaist.position.z = 200;
+    servoWaist.parent = base;
+    
+    var waist = BABYLON.MeshBuilder.CreateBox("waist", { width: 1, height: 1, depth: 1 }, scene);
+    waist.parent = servoWaist;
+
+    var servo01 = BABYLON.MeshBuilder.CreateBox("servo01", { width: 1, height: 1, depth: 1 }, scene);
+    servo01.position.x = 100;
+    servo01.position.z = 130;
+    servo01.rotation.x = BABYLON.Tools.ToRadians(90);
+    servo01.parent = waist;
+    
+    var arm1 = BABYLON.MeshBuilder.CreateBox("arm1", { width: 1, height: 1, depth: 1 }, scene);
+    arm1.parent = servo01;
+    
+    var servo02 = BABYLON.MeshBuilder.CreateBox("servo02", { width: 1, height: 1, depth: 1 }, scene);
+    servo02.position.x = 400;
+    servo02.parent = arm1;
+    
+    var arm2 = BABYLON.MeshBuilder.CreateBox("arm2", { width: 1, height: 1, depth: 1 }, scene);
+    arm2.parent = servo02;
+    
+    var servo03 = BABYLON.MeshBuilder.CreateBox("servo03", { width: 1, height: 1, depth: 1 }, scene);
+    servo03.rotation.x = BABYLON.Tools.ToRadians(-90);
+    servo03.parent = arm2;
+    
+    var wrist = BABYLON.MeshBuilder.CreateBox("wrist", { width: 1, height: 1, depth: 1 }, scene);
+    wrist.parent = servo03;
+    
+    var servo04 = BABYLON.MeshBuilder.CreateBox("servo04", { width: 1, height: 1, depth: 1 }, scene);
+    servo04.position.z = 375
+    servo04.rotation.x = BABYLON.Tools.ToRadians(90);
+    servo04.parent = wrist;
+    
+    var hand = BABYLON.MeshBuilder.CreateBox("hand", { width: 1, height: 1, depth: 1 }, scene);
+    hand.parent = servo04;
+    
+    var servo05 = BABYLON.MeshBuilder.CreateBox("servo05", { width: 1, height: 1, depth: 1 }, scene);
+
+    servo05.rotation.x = BABYLON.Tools.ToRadians(-90);
+    servo05.parent = hand;
+    
+    var claw = BABYLON.MeshBuilder.CreateBox("claw", { width: 1, height: 1, depth: 1 }, scene);
+    claw.parent = servo05;
+
+    var actuator = BABYLON.MeshBuilder.CreateBox("actuator", { width: 1, height: 1, depth: 1 }, scene);
+    actuator.position.z = 200
+    actuator.parent = claw; 
+
+    // Posicionamento inicial
+    // Inicia a engine
+    engine.runRenderLoop(function () {
+        scene.render();
+    });
+
+    var waistIni = BABYLON.Tools.ToRadians(180);
+    var arm1Ini = BABYLON.Tools.ToRadians(90);
+    var arm2Ini = BABYLON.Tools.ToRadians(0);
+    var wristIni = BABYLON.Tools.ToRadians(180);
+    var handIni = BABYLON.Tools.ToRadians(0);
+    var clawIni = BABYLON.Tools.ToRadians(0);
+
+    waist.rotation.z = waistIni;
+    arm1.rotation.z = arm1Ini;
+    arm2.rotation.z = arm2Ini;
+    wrist.rotation.z = wristIni;
+    hand.rotation.z = handIni;
+    claw.rotation.z = clawIni;
+
+    var actuatorIniX = actuator.getAbsolutePosition().x;
+    var actuatorIniY = actuator.getAbsolutePosition().y;
+    var actuatorIniZ = actuator.getAbsolutePosition().z;
+
+    console.log("Posicao inicial do atuador: ", actuatorIniX, actuatorIniY, actuatorIniZ);
+
+    
+    // GUI
+    var GUI = BABYLON.GUI;
+    // Instancia para GUI
+    
+    // GUI para os botoes
+    var advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    var UiPanel = new BABYLON.GUI.StackPanel();
+    UiPanel.width = "220px";
+    UiPanel.fontSize = "14px";
+    UiPanel.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    UiPanel.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    advancedTexture.addControl(UiPanel);
+    
+    
+    // Painel para os botões (lado esquerdo)
+    var UiPanelLeft = new BABYLON.GUI.StackPanel();
+    UiPanelLeft.width = "220px";
+    UiPanelLeft.fontSize = "14px";
+    UiPanelLeft.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
+    UiPanelLeft.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    advancedTexture.addControl(UiPanelLeft);
+    
+    // Botao de Start/Stop
+    var startStopButton = GUI.Button.CreateSimpleButton("startStopButton", "Start Program");
+    startStopButton.paddingTop = "10px";
+    startStopButton.width = "150px";
+    startStopButton.height = "40px";
+    startStopButton.color = "white";
+    startStopButton.background = "green";
+    startStopButton.onPointerUpObservable.add(function () {
+        if (isRoutineRunning) {
+            stopRoutine();
+            startStopButton.textBlock.text = "Start Program";
+            startStopButton.background = "green";
+        } else if (pontos.length > 1) {
+            startRoutine();
+            startStopButton.textBlock.text = "Stop Program";
+            startStopButton.background = "red";
+        }
+    });
+    UiPanelLeft.addControl(startStopButton);
+
+    // Inicialmente, definir visibilidade dos eixos como falsa
+    var toggleAxisButton = GUI.Button.CreateSimpleButton("toggleAxisButton", "Toggle Axes");
+    var axesVisible = false;
+    var baseAxis = null;
+    var servo01Axis = null;
+    var servo02Axis = null;  
+    var servo03Axis = null;
+    var servo04Axis = null;
+    var servo05Axis = null;
+    var actuatorAxis = null;
+    toggleAxisButton.paddingTop = "10px";
+    toggleAxisButton.width = "150px";
+    toggleAxisButton.height = "40px";
+    toggleAxisButton.color = "white";
+    toggleAxisButton.background = "blue";
+    toggleAxisButton.onPointerUpObservable.add(function() {
+        axesVisible = !axesVisible;
+        if (axesVisible) {
+            baseAxis = showAxis(scene,base);
+            servo01Axis = showAxis(scene,servo01);
+            servo02Axis = showAxis(scene,servo02);
+            servo03Axis = showAxis(scene,servo03);
+            servo04Axis = showAxis(scene,servo04);
+            servo05Axis = showAxis(scene,servo05);
+            actuatorAxis = showAxis(scene,actuator);
+        }
+        if (!axesVisible) {
+            if (baseAxis) { baseAxis.dispose(); baseAxis = null; }
+            if (servo01Axis) { servo01Axis.dispose(); servo01Axis = null; }
+            if (servo02Axis) { servo02Axis.dispose(); servo02Axis = null; }
+            if (servo03Axis) { servo03Axis.dispose(); servo03Axis = null; }
+            if (servo04Axis) { servo04Axis.dispose(); servo04Axis = null; }
+            if (servo05Axis) { servo05Axis.dispose(); servo05Axis = null; }
+            if (actuatorAxis) { actuatorAxis.dispose(); actuatorAxis = null; }
+        }
+    });
+    UiPanelLeft.addControl(toggleAxisButton);
+
+    var pontos = [];
+
+    function adicionarPonto() {
+        const ponto = {
+            waist: waist.rotation.z,
+            arm1: arm1.rotation.z,
+            arm2: arm2.rotation.z,
+            wrist: wrist.rotation.z,
+            hand: hand.rotation.z,
+            claw: claw.rotation.z,
+            x: actuator.getAbsolutePosition().x,
+            y: actuator.getAbsolutePosition().y,
+            z: actuator.getAbsolutePosition().z,
+            indicador : BABYLON.MeshBuilder.CreateSphere("pontoEsfera", { diameter: 15 }, scene),
+            deltaT: currentFrame
+        };
+
+        ponto.indicador.position = new BABYLON.Vector3(ponto.x, ponto.y, ponto.z);
+        var mat = new BABYLON.StandardMaterial("matEsfera", scene);
+        mat.diffuseColor = new BABYLON.Color3(1, 0, 0); // vermelho
+        ponto.indicador.material = mat;
+        
+        pontos.push(ponto);
+
+    }
+
+    var addPointButton = GUI.Button.CreateSimpleButton("addPointButton", "Add Point");
+    addPointButton.paddingTop = "10px";
+    addPointButton.width = "150px";
+    addPointButton.height = "40px";
+    addPointButton.color = "white";
+    addPointButton.background = "blue";
+    addPointButton.onPointerUpObservable.add(function() {
+        adicionarPonto();
+    });
+    UiPanelLeft.addControl(addPointButton);
+
+    // Container horizontal para os controles de quadro
+    var frameControlContainer = new BABYLON.GUI.StackPanel();
+    frameControlContainer.isVertical = false;
+    frameControlContainer.height = "40px";
+    frameControlContainer.width = "150px";
+    frameControlContainer.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    frameControlContainer.paddingTop = "10px";
+
+    // Botao seta esquerda
+    var leftArrowButton = BABYLON.GUI.Button.CreateSimpleButton("leftArrowButton", "-");
+    leftArrowButton.width = "40px";
+    leftArrowButton.height = "30px";
+    leftArrowButton.color = "white";
+    leftArrowButton.background = "blue";
+    leftArrowButton.fontSize = "24px";
+
+    // Campo numérico central
+    var frameNumberInput = new BABYLON.GUI.InputText();
+    frameNumberInput.width = "70px";
+    frameNumberInput.height = "30px";
+    frameNumberInput.text = "1";
+    frameNumberInput.color = "white";
+    frameNumberInput.background = "gray";
+    frameNumberInput.fontSize = "18px";
+    frameNumberInput.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
+    frameNumberInput.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    frameNumberInput.maxWidth = 70;
+    frameNumberInput.thickness = 1;
+
+    // Botao seta direita
+    var rightArrowButton = BABYLON.GUI.Button.CreateSimpleButton("rightArrowButton", "+");
+    rightArrowButton.width = "40px";
+    rightArrowButton.height = "30px";
+    rightArrowButton.color = "white";
+    rightArrowButton.background = "blue";
+    rightArrowButton.fontSize = "24px";
+
+    // Valor do quadro atual
+    var currentFrame = 1;
+    function updateFrameInput() {
+        frameNumberInput.text = currentFrame.toString();
+    }
+
+    leftArrowButton.onPointerUpObservable.add(function () {
+        currentFrame = Math.max(0, currentFrame - 1);
+        updateFrameInput();
+    });
+
+    rightArrowButton.onPointerUpObservable.add(function () {
+        currentFrame = currentFrame + 1;
+        updateFrameInput();
+    });
+
+    frameNumberInput.onTextChangedObservable.add(function () {
+        var val = parseInt(frameNumberInput.text);
+        if (!isNaN(val) && val >= 0) {
+            currentFrame = val;
+        } else {
+            frameNumberInput.text = currentFrame.toString();
+        }
+    });
+
+    frameControlContainer.addControl(leftArrowButton);
+    frameControlContainer.addControl(frameNumberInput);
+    frameControlContainer.addControl(rightArrowButton);
+
+    UiPanelLeft.addControl(frameControlContainer);
+    function updateFrameControlsState() {
+        const disabled = pontos.length === 0;
+        frameControlContainer.isEnabled = !disabled;
+        leftArrowButton.isEnabled = !disabled;
+        rightArrowButton.isEnabled = !disabled;
+        frameNumberInput.isEnabled = !disabled;
+
+        const gray = "gray";
+        const blue = "blue";
+        leftArrowButton.background = disabled ? gray : blue;
+        rightArrowButton.background = disabled ? gray : blue;
+        frameNumberInput.background = disabled ? gray : "gray";
+    }
+
+    scene.onBeforeRenderObservable.add(updateFrameControlsState);
+
+    function clearPontos() {
+        // remover esferas indicadoras da cena
+        pontos.forEach(p => {
+            if (p.indicador && !p.indicador.isDisposed()) {
+                p.indicador.dispose();
+            }
+        });
+        pontos = [];
+
+        // opcional: limpar a trajetória caso exista
+        if (typeof clearTrajectory === "function") {
+            clearTrajectory();
+        }
+
+        // atualizar estado dos controles dependentes de pontos
+        updateFrameControlsState();
+    }
+
+    // Botao para limpar pontos
+    var clearPointsButton = GUI.Button.CreateSimpleButton("clearPointsButton", "Clear Points");
+    clearPointsButton.paddingTop = "10px";
+    clearPointsButton.width = "150px";
+    clearPointsButton.height = "40px";
+    clearPointsButton.color = "white";
+    clearPointsButton.background = "red";
+    clearPointsButton.onPointerUpObservable.add(function () {
+        clearPontos();
+    });
+    UiPanelLeft.addControl(clearPointsButton);
+
+    UiPanelLeft.addControl(toggleAxisButton);
+    
+    // Painel para os sliders (lado direito)
+    var UiPanelRight = new BABYLON.GUI.StackPanel();
+    UiPanelRight.width = "220px";
+    UiPanelRight.fontSize = "14px";
+    UiPanelRight.horizontalAlignment = BABYLON.GUI.Control.HORIZONTAL_ALIGNMENT_RIGHT;
+    UiPanelRight.verticalAlignment = BABYLON.GUI.Control.VERTICAL_ALIGNMENT_CENTER;
+    advancedTexture.addControl(UiPanelRight);
+
+    var servoSlidersContainer = new BABYLON.GUI.StackPanel();
+    servoSlidersContainer.width = "220px";
+    servoSlidersContainer.isVisible = true; // Comeca visível
+    servoSlidersContainer.paddingTop = "20px";
+    
+
+    var ikControlsContainer = new BABYLON.GUI.StackPanel();
+    ikControlsContainer.width = "220px";
+    ikControlsContainer.isVisible = false; // Comeca oculto
+    ikControlsContainer.paddingTop = "20px";
+    
+    // Botao para alternar entre os menus
+    var toggleMenuButton = BABYLON.GUI.Button.CreateSimpleButton("toggleMenuButton", "Toggle direct/inverse kinematics");
+    toggleMenuButton.width = "150px";
+    toggleMenuButton.height = "40px";
+    toggleMenuButton.color = "white";
+    toggleMenuButton.background = "purple";
+    toggleMenuButton.onPointerUpObservable.add(function () {
+        servoSlidersContainer.isVisible = !servoSlidersContainer.isVisible;
+        ikControlsContainer.isVisible = !ikControlsContainer.isVisible;
+        updateSliders();
+    });
+    UiPanelRight.addControl(toggleMenuButton);
+    
+        UiPanelRight.addControl(servoSlidersContainer);
+        UiPanelRight.addControl(ikControlsContainer);
+    
+    var isUpdating = false; 
+    function updateSliders() {
+        if (servoSlidersContainer.isVisible) {
+            isUpdating = true;
+            sliderWaistContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(waist.rotation.z));
+            sliderArm1Container.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(arm1.rotation.z));
+            sliderArm2Container.children[1].children[0].value = BABYLON.Tools.ToDegrees(arm2.rotation.z);
+            sliderWristContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(wrist.rotation.z));
+            sliderHandContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(hand.rotation.z);
+            sliderClawContainer.children[1].children[0].value = ajustarAngulo(BABYLON.Tools.ToDegrees(claw.rotation.z));
+            isUpdating = false;
+        }
+        if (ikControlsContainer.isVisible) {
+            isUpdating = true;
+            sliderIKXContainer.children[1].children[0].value = actuator.getAbsolutePosition().x;
+            sliderIKYContainer.children[1].children[0].value = actuator.getAbsolutePosition().y;
+            sliderIKZContainer.children[1].children[0].value = actuator.getAbsolutePosition().z;
+            sliderIKRollContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(getRoll(actuator));
+            sliderIKPitchContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(getPitch(actuator));
+            sliderIKYawContainer.children[1].children[0].value = BABYLON.Tools.ToDegrees(getYaw(actuator));
+            isUpdating = false;
+        }
+    }
+    scene.onBeforeRenderObservable.add(function () {
+        printMatrixToDataTab(actuator);
+    });
+
+    function getCurrentJointAngles() {
+        return [waist.rotation.z, arm1.rotation.z, arm2.rotation.z, wrist.rotation.z, hand.rotation.z, claw.rotation.z];
+    }
+
+    function setJointAngles(angles) {
+        waist.rotation.z = angles[0];
+        arm1.rotation.z = angles[1];
+        arm2.rotation.z = angles[2];
+        wrist.rotation.z = angles[3];
+        hand.rotation.z = angles[4];
+        claw.rotation.z = angles[5];
+    }
+
+    function solveAndApplyIK(T06) {
+        var angles = inverse_kinematics(DH, T06, getCurrentJointAngles());
+        if (Array.isArray(angles) && angles.length === 6) {
+            setJointAngles(angles);
+        }
+    }
+
+    var sliderWaistContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(waistIni), function (value) {
+        if (isUpdating) return;
+        waist.rotation.z = BABYLON.Tools.ToRadians(value);
+    }, "θ1 (deg)");
+    servoSlidersContainer.addControl(sliderWaistContainer);
+
+    var sliderArm1Container = createSliderWithText(0, 180, BABYLON.Tools.ToDegrees(arm1Ini), function (value) {
+        if (isUpdating) return;
+        arm1.rotation.z = BABYLON.Tools.ToRadians(value);
+    }, "θ2 (deg)");
+    servoSlidersContainer.addControl(sliderArm1Container);
+
+    var sliderArm2Container = createSliderWithText(-240, 61, BABYLON.Tools.ToDegrees(arm2Ini), function (value) {
+        if (isUpdating) return;
+        arm2.rotation.z = BABYLON.Tools.ToRadians(value);
+    }, "θ3 (deg)");
+    servoSlidersContainer.addControl(sliderArm2Container);
+
+    var sliderWristContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(wristIni), function (value) {
+        if (isUpdating) return;
+        wrist.rotation.z = BABYLON.Tools.ToRadians(value);
+    }, "θ4 (deg)");
+    servoSlidersContainer.addControl(sliderWristContainer);
+
+    var sliderHandContainer = createSliderWithText(-90, 90, BABYLON.Tools.ToDegrees(handIni), function (value) {
+        if (isUpdating) return;
+        hand.rotation.z = BABYLON.Tools.ToRadians(value);
+    }, "θ5 (deg)");
+    servoSlidersContainer.addControl(sliderHandContainer);
+
+    var sliderClawContainer = createSliderWithText(0, 360, BABYLON.Tools.ToDegrees(clawIni), function (value) {
+        if (isUpdating) return;
+        claw.rotation.z = BABYLON.Tools.ToRadians(value);
+    }, "θ6 (deg)");
+    servoSlidersContainer.addControl(sliderClawContainer);
+
+    var sliderIKXContainer = createSliderWithText(-1500, 1500, actuatorIniX, function (value) {
+        if (isUpdating) return;
+        const T06 = T_fromMesh(actuator);
+        T06[0][3] = value;
+        solveAndApplyIK(T06);
+    }, "Posicao X");
+    ikControlsContainer.addControl(sliderIKXContainer);
+
+    var sliderIKYContainer = createSliderWithText(-1500, 1500, actuatorIniY, function (value) {
+        if (isUpdating) return;
+        const T06 = T_fromMesh(actuator);
+        T06[1][3] = value;
+        solveAndApplyIK(T06);
+    }, "Posicao Y");
+    ikControlsContainer.addControl(sliderIKYContainer);
+
+    var sliderIKZContainer = createSliderWithText(0, 2000,actuatorIniZ, function (value) {
+        if (isUpdating) return;
+        const T06 = T_fromMesh(actuator);
+        T06[2][3] = value;
+        solveAndApplyIK(T06);
+    }, "Posicao Z");
+    ikControlsContainer.addControl(sliderIKZContainer);
+
+    var sliderIKRollContainer = createSliderWithText(-180, 180, 0, function (value) {
+        if (isUpdating) return;
+        var T06 = T_fromMesh(actuator);
+        T06 = setRoll(T06, BABYLON.Tools.ToRadians(value));
+        solveAndApplyIK(T06);
+    }, "Roll");
+    ikControlsContainer.addControl(sliderIKRollContainer);  
+
+    var sliderIKPitchContainer = createSliderWithText(-180, 180, 0, function (value) {
+        if (isUpdating) return;
+        var T06 = T_fromMesh(actuator);
+        T06 = setPitch(T06, BABYLON.Tools.ToRadians(value));
+        solveAndApplyIK(T06);
+    }, "Pitch");
+    ikControlsContainer.addControl(sliderIKPitchContainer);     
+
+    var sliderIKYawContainer = createSliderWithText(-180, 180, 0, function (value) {
+        if (isUpdating) return;
+        var T06 = T_fromMesh(actuator);
+        T06 = setYaw(T06, BABYLON.Tools.ToRadians(value));
+        solveAndApplyIK(T06);
+    }, "Yaw");
+    ikControlsContainer.addControl(sliderIKYawContainer);   
+
+    // Controle manual pelo teclado
+    var rotationSpeed = 0.03;
+    var linearSpeed = 10;
+    window.addEventListener("keydown", function (event) {
+        if (servoSlidersContainer.isVisible) {
+            switch (event.key.toLowerCase()) {
+                case "q":
+                    waist.rotation.z -= rotationSpeed; 
+                    break;
+                    case "w": 
+                    waist.rotation.z += rotationSpeed; 
+                    break;
+                case "e":
+                    if (BABYLON.Tools.ToDegrees(arm1.rotation.z - rotationSpeed) <= 0) {
+                        arm1.rotation.z = BABYLON.Tools.ToRadians(0);
+                    } else {
+                        arm1.rotation.z -= rotationSpeed;
+                    }
+                    break;
+                case "r":
+                    if (BABYLON.Tools.ToDegrees(arm1.rotation.z + rotationSpeed) >= 180) {
+                        arm1.rotation.z = BABYLON.Tools.ToRadians(180);
+                    } else {
+                        arm1.rotation.z += rotationSpeed;
+                    }
+                    break;
+                case "a":
+                    if(BABYLON.Tools.ToDegrees(arm2.rotation.z - rotationSpeed) <= -240) {
+                        arm2.rotation.z = BABYLON.Tools.ToRadians(-240);
+                    } else {
+                        arm2.rotation.z -= rotationSpeed;
+                    }
+                    break;
+                case "s":
+                    if(BABYLON.Tools.ToDegrees(arm2.rotation.z + rotationSpeed) >= 61) {
+                        arm2.rotation.z = BABYLON.Tools.ToRadians(61);
+                    } else {
+                        arm2.rotation.z += rotationSpeed;
+                    }
+                    break;
+                case "d":
+                    wrist.rotation.z -= rotationSpeed;
+                    break;
+                case "f":
+                    wrist.rotation.z += rotationSpeed;
+                    break;
+                case "x":
+                    if (BABYLON.Tools.ToDegrees(hand.rotation.z - rotationSpeed) <= -90) {
+                        hand.rotation.z = BABYLON.Tools.ToRadians(-90);
+                    } else {
+                        hand.rotation.z -= rotationSpeed;
+                    }
+                    break;
+                case "z":
+                    if (BABYLON.Tools.ToDegrees(hand.rotation.z - rotationSpeed) >= 90) {
+                        hand.rotation.z = BABYLON.Tools.ToRadians(90);
+                    } else {
+                        hand.rotation.z += rotationSpeed;
+                    }
+                    break;
+                case "c":
+                    claw.rotation.z -= rotationSpeed; 
+                    break;
+                case "v": 
+                    claw.rotation.z += rotationSpeed; 
+                    break;
+                }
+            updateSliders();
+        }
+    });
+    // Rotina e trajeto
+
+    let trajectoryPoints = [];
+    let trajectoryLine = null;
+    let pendingSinceRebuild = 0; // quantos pontos novos desde a última recriacao
+    const rebuildBatchSize = 8; // ajuste conforme desempenho desejado
+
+    function clearTrajectory() {
+        trajectoryPoints = [];
+        pendingSinceRebuild = 0;
+        if (trajectoryLine) {
+            trajectoryLine.dispose();
+            trajectoryLine = null;
+        }
+    }
+
+    function addTrajectoryPoint(vec3) {
+        trajectoryPoints.push(vec3);
+
+        if (!trajectoryLine) {
+            // primeira criacao
+            trajectoryLine = BABYLON.MeshBuilder.CreateLines("trajectory", {
+                points: trajectoryPoints,
+                updatable: true
+            }, scene);
+            trajectoryLine.color = new BABYLON.Color3(1, 1, 1);
+            pendingSinceRebuild = 0;
+            return;
+        }
+
+        // Se o número de pontos mudou, precisamos recriar a malha.
+        // Para nao recriar a cada ponto, espere acumular N pontos.
+        pendingSinceRebuild++;
+        if (pendingSinceRebuild >= rebuildBatchSize) {
+            trajectoryLine.dispose();
+            trajectoryLine = BABYLON.MeshBuilder.CreateLines("trajectory", {
+                points: trajectoryPoints,
+                updatable: true
+            }, scene);
+            trajectoryLine.color = new BABYLON.Color3(1, 1, 1);
+            pendingSinceRebuild = 0;
+        } else {
+            // Entre recriacões, atualiza a posicao dos pontos já existentes
+            BABYLON.MeshBuilder.CreateLines(null, {
+                points: trajectoryPoints.slice(0, trajectoryLine.getVerticesData(BABYLON.VertexBuffer.PositionKind).length / 3),
+                updatable: true,
+                instance: trajectoryLine
+            });
+        }
+    }
+
+
+    var isRoutineRunning = false;   
+
+    function startRoutine() {
+        if (!isRoutineRunning) {
+            if (pontos.length === 0) {
+                console.log("Nenhum ponto adicionado para executar a rotina.");
+                return;
+            }
+            isRoutineRunning = true;
+            clearAllCharts();
+
+            // limpar trajeto e adicionar ponto inicial do atuador
+            clearTrajectory();
+            setPositionFromPoint(pontos[0]);
+            addTrajectoryPoint(new BABYLON.Vector3(pontos[0].x, pontos[0].y, pontos[0].z));
+
+            performRoutine(pontos);
+        }
+    }
+
+    function stopRoutine() {
+        isRoutineRunning = false;
+    }
+
+    async function performRoutine(pontos) {
+        if (!Array.isArray(pontos) || pontos.length < 2) {
+            isRoutineRunning = false;
+            if (typeof startStopButton !== "undefined" && startStopButton) {
+                startStopButton.textBlock.text = "Start Program";
+                startStopButton.background = "green";
+            }
+            return;
+        }
+
+        // tempo acumulado da rotina em ms — usado para que os gráficos usem tempo contínuo
+        let totalTimeMs = 0;
+
+        for (let i = 0; i + 1 < pontos.length && isRoutineRunning; i++) {
+            const durationMs = pontos[i + 1].deltaT * 1000;
+            await movePointToPoint(pontos[i], pontos[i + 1], durationMs, totalTimeMs);
+            totalTimeMs += durationMs;
+        }
+
+        // ao terminar, marcar rotina como parada e atualizar o botao
+        isRoutineRunning = false;
+        if (typeof startStopButton !== "undefined" && startStopButton) {
+            startStopButton.textBlock.text = "Start Program";
+            startStopButton.background = "green";
+        }
+    }
+
+    // Move suavemente de startPoint para endPoint em "durationMs" milissegundos usando um polinômio cúbico
+    // Condicões: velocidade inicial e final = 0
+    // tOffsetMs: deslocamento de tempo (em ms) para manter os labels dos gráficos contínuo
+    function movePointToPoint(startPoint, endPoint, durationMs, tOffsetMs = 0) {
+        return new Promise((resolve) => {
+            const joints = ["waist", "arm1", "arm2", "wrist", "hand", "claw"];
+            const T = durationMs / 1000; // converter para segundos
+            // calcular coeficientes a0..a3 para cada junta
+            const coeffs = {};
+            joints.forEach((j) => {
+                const q0 = startPoint[j];
+                const qf = endPoint[j];
+                const d = qf - q0;
+                const a0 = q0;
+                const a1 = 0;
+                const a2 = 3 * d / (T * T);
+                const a3 = -2 * d / (T * T * T);
+                coeffs[j] = { a0, a1, a2, a3 };
+            });
+
+            let startTime = null;
+            let rafId = null;
+
+            function step(ts) {
+                if (!startTime) startTime = ts;
+                const elapsedMs = ts - startTime;
+                const clampedMs = Math.min(elapsedMs, durationMs);
+                const tSec = clampedMs / 1000; // tempo em segundos, limitado a T
+
+                // atualizar juntas por polinômio cúbico
+                joints.forEach((j) => {
+                    const { a0, a1, a2, a3 } = coeffs[j];
+                    // theta(t) = a0 + a1 t + a2 t^2 + a3 t^3
+                    const theta = a0 + a1 * tSec + a2 * tSec * tSec + a3 * tSec * tSec * tSec;
+
+                    // aplicar ao mesh
+                    switch (j) {
+                        case "waist": waist.rotation.z = theta; break;
+                        case "arm1":  arm1.rotation.z  = theta; break;
+                        case "arm2":  arm2.rotation.z  = theta; break;
+                        case "wrist": wrist.rotation.z = theta; break;
+                        case "hand":  hand.rotation.z  = theta; break;
+                        case "claw":  claw.rotation.z  = theta; break;
+                    }
+                });
+
+                // Atualizar sliders e prints
+                updateSliders();
+                printMatrixToDataTab(actuator);
+
+                // Registrar ponto do atuador e atualizar linha do trajeto
+                // Usa posicao absoluta atual do "actuator"
+                const tipPos = actuator.getAbsolutePosition().clone();
+                addTrajectoryPoint(tipPos);
+
+                // --- gráficos (pos, vel, acc) ---
+                const velDeg = [];
+                const accDeg = [];
+                joints.forEach((j) => {
+                    const { a1, a2, a3 } = coeffs[j];
+                    const thetaDot = a1 + 2 * a2 * tSec + 3 * a3 * tSec * tSec;
+                    const thetaDDot = 2 * a2 + 6 * a3 * tSec;
+                    velDeg.push(BABYLON.Tools.ToDegrees(thetaDot));
+                    accDeg.push(BABYLON.Tools.ToDegrees(thetaDDot));
+                });
+
+                // Adicionar dados aos charts (usa tempo total: tOffsetMs + elapsedMs)
+                if (typeof addData === "function" && typeof chart1 !== "undefined") {
+                    const totalLabel = ((tOffsetMs + elapsedMs) / 1000).toFixed(2);
+                    // posicões (graus)
+                    addData(chart1, totalLabel,
+                        BABYLON.Tools.ToDegrees(waist.rotation.z),
+                        BABYLON.Tools.ToDegrees(arm1.rotation.z),
+                        BABYLON.Tools.ToDegrees(arm2.rotation.z),
+                        BABYLON.Tools.ToDegrees(wrist.rotation.z),
+                        BABYLON.Tools.ToDegrees(hand.rotation.z),
+                        BABYLON.Tools.ToDegrees(claw.rotation.z)
+                    );
+                    // velocidades (graus/s) -> chart2
+                    addData(chart2, totalLabel,
+                        velDeg[0], velDeg[1], velDeg[2], velDeg[3], velDeg[4], velDeg[5]
+                    );
+                    // aceleracões (graus/s²) -> chart3
+                    addData(chart3, totalLabel,
+                        accDeg[0], accDeg[1], accDeg[2], accDeg[3], accDeg[4], accDeg[5]
+                    );
+                }
+
+                // terminar ou continuar
+                if (elapsedMs >= durationMs || !isRoutineRunning) {
+                    // garantir estado final exatamente igual ao endPoint
+                    setPositionFromPoint(endPoint);
+                    updateSliders();
+
+                    // garantir que o ponto final também esteja no trajeto
+                    addTrajectoryPoint(actuator.getAbsolutePosition().clone());
+
+                    if (typeof addData === "function" && typeof chart1 !== "undefined") {
+                        const totalLabel = ((tOffsetMs + durationMs) / 1000).toFixed(2);
+                        addData(chart1, totalLabel,
+                            BABYLON.Tools.ToDegrees(endPoint.waist),
+                            BABYLON.Tools.ToDegrees(endPoint.arm1),
+                            BABYLON.Tools.ToDegrees(endPoint.arm2),
+                            BABYLON.Tools.ToDegrees(endPoint.wrist),
+                            BABYLON.Tools.ToDegrees(endPoint.hand),
+                            BABYLON.Tools.ToDegrees(endPoint.claw)
+                        );
+                        addData(chart2, totalLabel, 0, 0, 0, 0, 0, 0);
+                        addData(chart3, totalLabel, 0, 0, 0, 0, 0, 0);
+                    }
+                    if (rafId) cancelAnimationFrame(rafId);
+                    resolve();
+                    return;
+                }
+                rafId = requestAnimationFrame(step);
+            }
+
+            // iniciar loop
+            rafId = requestAnimationFrame(step);
+        });
+    }
+
+    function setPositionFromPoint(point) {
+        waist.rotation.z = point.waist;
+        arm1.rotation.z = point.arm1;
+        arm2.rotation.z = point.arm2;
+        wrist.rotation.z = point.wrist;
+        hand.rotation.z = point.hand;
+        claw.rotation.z = point.claw;
+    }
+
+    return scene;
+};
+
+window.initFunction = async function () {
+
+    var asyncEngineCreation = async function () {
+        try {
+            return createDefaultEngine();
+        } catch (e) {
+            console.log("the available createEngine function failed. Creating the default engine instead");
+            return createDefaultEngine();
+        }
+    }
+
+    window.engine = await asyncEngineCreation();
+    if (!engine) throw 'engine should not be null.';
+    startRenderLoop(engine, canvas);
+    window.scene = createScene();
+};
+initFunction().then(() => {
+    sceneToRender = scene
+});
+
+// Resize
+window.addEventListener("resize", function () {
+    engine.resize();
+})

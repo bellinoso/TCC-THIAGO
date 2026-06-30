@@ -40,7 +40,7 @@ O funcionamento do sistema segue o seguinte fluxo geral:
     \item O usuário interage com a interface por meio de controles deslizantes ou comandos de execução de trajetória;
     \item As variáveis articulares são atualizadas conforme a entrada fornecida;
     \item A nova configuração do manipulador é aplicada à estrutura hierárquica da cena 3D;
-    \item A pose do efetuador final é recalculada e, quando aplicável, utilizada na atualização dos gráficos;
+    \item O posicionamento do efetuador final é recalculado e, quando aplicável, utilizado na atualização dos gráficos;
     \item O motor gráfico renderiza a cena atualizada em tempo real.
 \end{enumerate}
 
@@ -60,9 +60,9 @@ A modelagem do manipulador foi conduzida com o objetivo de garantir coerência e
 
 \subsection{Definição da Geometria}
 
-O manipulador desenvolvido é do tipo serial com seis graus de liberdade, composto exclusivamente por juntas revolutas (configuração 6R). A escolha de seis graus de liberdade deve-se ao fato de que a pose completa de um corpo rígido no espaço tridimensional é definida por seis parâmetros independentes: três associados à posição e três à orientação. Dessa forma, um manipulador 6R permite o posicionamento e orientação arbitrários do efetuador final dentro de seu espaço de trabalho.
+O manipulador desenvolvido é do tipo serial com seis graus de liberdade, composto exclusivamente por juntas revolutas (configuração 6R). A escolha de seis graus de liberdade deve-se ao fato de que o posicionamento completo de um corpo rígido no espaço tridimensional é definida por seis parâmetros independentes: três associados à posição e três à orientação. Dessa forma, um manipulador 6R permite o posicionamento e orientação arbitrários do efetuador final dentro de seu espaço de trabalho.
 
-Além disso, foi adotada a configuração com punho esférico, na qual os três últimos eixos de rotação intersectam-se em um único ponto. Essa característica geométrica é fundamental para a solução analítica da cinemática inversa, pois permite o desacoplamento entre o problema de posicionamento e o problema de orientação, conforme discutido na Seção 2.5.
+Além disso, foi adotada a configuração com punho esférico, na qual os três últimos eixos de rotação intersectam-se em um único ponto. Essa característica geométrica é fundamental para a solução analítica da cinemática inversa, pois permite o desacoplamento entre o problema de posicionamento e o problema de orientação, conforme discutido na Seção \ref{sec:cinematica_inversa}.
 
 Nessa abordagem, as três primeiras variáveis articulares determinam a posição do centro do punho, enquanto as três últimas variáveis são responsáveis exclusivamente pela orientação do efetuador final. Essa propriedade reduz a complexidade matemática do problema inverso e viabiliza a obtenção de soluções fechadas, tornando o sistema mais eficiente para execução em tempo real.
 
@@ -138,7 +138,7 @@ Essa integração entre o modelo geométrico e o modelo matemático assegura con
 
 \section{Implementação da Cinemática Direta}
 
-A implementação da cinemática direta no simulador segue a formulação apresentada no Capítulo 2, na qual a pose do efetuador final é obtida pelo produto sucessivo das matrizes de transformação homogênea associadas a cada elo do manipulador.
+A implementação da cinemática direta no simulador segue a formulação apresentada no Capítulo 2, na qual o posicionamento do efetuador final é obtida pelo produto sucessivo das matrizes de transformação homogênea associadas a cada elo do manipulador.
 
 No ambiente computacional, essa operação não é implementada explicitamente por meio da multiplicação das matrizes DH. Em vez disso, ela é realizada implicitamente pelo motor gráfico Babylon.js por meio da estrutura hierárquica de transformações da cena tridimensional. Nessa estrutura, cada junta do manipulador é representada por um nó de transformação, de modo que as rotações aplicadas às juntas propagam-se automaticamente ao longo da cadeia cinemática, produzindo o mesmo efeito geométrico descrito pelo modelo matemático.
 
@@ -161,7 +161,7 @@ O controle das variáveis articulares no simulador é realizado por meio de elem
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.3\textwidth]{Imagens/slider.png}
-    \caption{\textit{Sliders} para controle do manipulador no espaco de juntas}
+    \caption{\textit{Sliders} para controle do manipulador no espaco de juntas.}
     \label{fig:slider}
 \end{figure}
 
@@ -180,6 +180,13 @@ Para isso, utiliza-se a função \texttt{getWorldMatrix()} do motor gráfico Bab
 Após sua obtenção, a matriz é organizada no formato $4 \times 4$ e exibida na interface do simulador, na região inferior da tela. Essa atualização ocorre em tempo real, acompanhando continuamente as variações impostas às juntas, seja por meio dos \textit{sliders} ou durante a execução de trajetórias programadas.
 
 Dessa forma, o usuário pode observar simultaneamente a movimentação tridimensional do manipulador e a correspondente matriz de transformação homogênea, reforçando a relação entre a modelagem matemática apresentada no Capítulo 2 e o comportamento geométrico do sistema implementado.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{Imagens/matriz_completa.png}
+    \caption{Matriz observada pelo usuário.}
+    \label{fig:matriz}
+\end{figure}
 
 \section{Implementação da Cinemática Inversa}
 
@@ -274,7 +281,7 @@ Nesse modo, o usuário define diretamente:
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.3\textwidth]{Imagens/slider_ci.png}
-    \caption{\textit{Sliders} para controle do manipulador no espaço cartesiano}
+    \caption{\textit{Sliders} para controle do manipulador no espaço cartesiano.}
     \label{fig:slider_ci}
 \end{figure}
 
@@ -288,7 +295,7 @@ Essa integração permite alternar entre controle no espaço das juntas e contro
 
 Durante a resolução da cinemática inversa, determinadas configurações geométricas do manipulador podem levar a situações conhecidas como singularidades. Nessas configurações, ocorre perda de mobilidade em determinadas direções do espaço operacional, tornando o cálculo das variáveis articulares indeterminado ou numericamente instável.
 
-Em termos gerais, singularidades estão associadas à perda de posto da matriz Jacobiana do manipulador. Nessas situações, pequenas variações na pose desejada do efetuador podem resultar em variações muito grandes nas variáveis articulares, ou mesmo tornar impossível a obtenção de uma solução única.
+Em termos gerais, singularidades estão associadas à perda de posto da matriz Jacobiana do manipulador. Nessas situações, pequenas variações no posicionamento desejado do efetuador podem resultar em variações muito grandes nas variáveis articulares, ou mesmo tornar impossível a obtenção de uma solução única.
 
 No manipulador adotado neste trabalho, a singularidade mais relevante ocorre no punho esférico, quando os eixos das juntas 4 e 6 tornam-se colineares. Essa condição ocorre quando:
 
@@ -379,7 +386,7 @@ O simulador disponibiliza dois modos principais de controle do manipulador: cont
 
 No modo de controle por juntas, a interface apresenta um conjunto de \textit{sliders}, cada um associado a uma variável articular do manipulador. Por meio desses controles, o usuário pode alterar diretamente os valores angulares das seis juntas, observando instantaneamente o efeito dessas variações sobre a postura do manipulador no ambiente tridimensional.
 
-No modo de controle cartesiano, o usuário pode definir diretamente a pose desejada do efetuador final. Nesse caso, a interface disponibiliza controles deslizantes para as coordenadas espaciais $x$, $y$ e $z$, bem como para os ângulos de orientação \textit{yaw}, \textit{pitch} e \textit{roll}. 
+No modo de controle cartesiano, o usuário pode definir diretamente o posicionamento desejado do efetuador final. Nesse caso, a interface disponibiliza controles deslizantes para as coordenadas espaciais $x$, $y$ e $z$, bem como para os ângulos de orientação \textit{yaw}, \textit{pitch} e \textit{roll}. 
 
 Sempre que um desses parâmetros é alterado, o algoritmo de cinemática inversa é executado automaticamente, calculando o conjunto de variáveis articulares correspondente à pose especificada. Os valores resultantes são então aplicados ao manipulador, atualizando imediatamente sua configuração.
 

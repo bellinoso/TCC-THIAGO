@@ -4,9 +4,9 @@ O desenvolvimento de um sistema para modelagem e visualização de um manipulado
 % Definição e classificação (serial/paralelo), graus de liberdade, elos e juntas, espaço de trabalho,
 % aplicações típicas, métricas (repetibilidade/precisão) e exemplos.
 
-Um manipulador robótico é um sistema mecânico articulado projetado para posicionar e orientar um efetuador no espaço tridimensional por meio do controle coordenado de múltiplos graus de liberdade. No contexto da automação industrial, robôs são amplamente empregados em tarefas como soldagem, montagem, pintura, usinagem, inspeção e movimentação de materiais, devido à sua capacidade de executar movimentos repetitivos com elevada precisão e confiabilidade.
+Um manipulador robótico é um sistema mecânico articulado projetado para posicionar e orientar um efetuador no espaço tridimensional por meio do controle coordenado de múltiplos graus de liberdade. No contexto da automação industrial, robôs são amplamente empregados em tarefas como soldagem, montagem, pintura, usinagem, inspeção e movimentação de materiais, devido à sua capacidade de executar movimentos repetitivos com elevada precisão e confiabilidade~\cite{craig2005,siciliano2009}.
 
-Segundo a norma ISO 8372:2012, um robô industrial é definido como uma máquina manipuladora automaticamente controlada, reprogramável e multifuncional, com três ou mais eixos programáveis, podendo ter base fixa ou móvel, destinada a aplicações de automação industrial \cite{romano2024}. Essa definição enfatiza três características fundamentais: reprogramabilidade, controle automático e multiplicidade de graus de liberdade.
+Segundo a norma ISO 8373:2012, um robô industrial é definido como uma máquina manipuladora automaticamente controlada, reprogramável e multifuncional, com três ou mais eixos programáveis, podendo ter base fixa ou móvel, destinada a aplicações de automação industrial \cite{iso8372,romano2024}. Essa definição enfatiza três características fundamentais: reprogramabilidade, controle automático e multiplicidade de graus de liberdade.
 
 De forma complementar, um robô é composto pelo conjunto formado por um manipulador, responsável pela movimentação e interação com o ambiente; a unidade de controle, que processa os comandos e define o comportamento do sistema; e a unidade de potência, que fornece a energia necessária para a atuação dos seus elementos. Essa composição é ilustrada na figura \ref{fig:esquema_robo}.
 
@@ -20,7 +20,7 @@ De forma complementar, um robô é composto pelo conjunto formado por um manipul
 
 Do ponto de vista estrutural, um manipulador é composto por uma cadeia cinemática aberta formada por elos rígidos interconectados por juntas. O primeiro elo é denominado base, geralmente fixo ao solo ou à estrutura de suporte, enquanto o último elo sustenta o efetuador final, responsável pela interação com o ambiente. 
 
-As juntas podem ser classificadas principalmente como junta de rotação (revolução) ou junta prismática  (translação). Cada junta introduz uma variável independente de posição. O número total dessas variáveis define os graus de liberdade do manipulador. Em uma cadeia cinemática aberta típica, o número de juntas coincide com o número de graus de liberdade do sistema \cite{romano2024}.
+As juntas podem ser classificadas principalmente como junta de rotação (revolução) ou junta prismática  (translação). Cada junta introduz uma variável independente de posição. O número total dessas variáveis define os graus de liberdade do manipulador. Em uma cadeia cinemática aberta típica, o número de juntas coincide com o número de graus de liberdade do sistema \cite{romano2024,spong2006}.
 
 \begin{figure}[H]
     \centering
@@ -51,7 +51,7 @@ No presente trabalho, considera-se um manipulador serial de seis graus de liberd
 
 \section{Representações por Transformações Homogêneas}
 
-Na modelagem cinemática de manipuladores robóticos, é necessário descrever de forma consistente a posição e a orientação de cada elo em relação a um sistema de coordenadas de referência (SCR). Essa descrição é realizada por meio das transformações homogêneas, que permitem representar simultaneamente rotação e translação em uma única estrutura matricial \cite{romano2024_parte2}.
+Na modelagem cinemática de manipuladores robóticos, é necessário descrever de forma consistente a posição e a orientação de cada elo em relação a um sistema de coordenadas de referência (SCR). Essa descrição é realizada por meio das transformações homogêneas, que permitem representar simultaneamente rotação e translação em uma única estrutura matricial \cite{romano2024_parte2,craig2005,siciliano2009}.
 \abbrev{SCR}{Sistema de coordenadas de referência}
 
 Considere dois sistemas de coordenadas, $\{A\}$ e $\{B\}$, rigidamente associados a diferentes elos do manipulador. A postura do sistema $\{B\}$ em relação ao sistema $\{A\}$ pode ser descrita por uma matriz de transformação homogênea da forma:
@@ -96,7 +96,7 @@ Essa propriedade torna as transformações homogêneas fundamentais para a formu
 
 \section{Convenção de \textit{Denavit-Hartenberg}}
 
-Embora as transformações homogêneas permitam descrever a relação entre sistemas de coordenadas arbitrários, a modelagem direta de manipuladores com múltiplos elos pode tornar-se trabalhosa se não houver um procedimento sistemático para definir esses sistemas de referência. A Convenção de \textit{Denavit-Hartenberg} (DH) estabelece uma metodologia padronizada para a atribuição de sistemas de coordenadas aos elos de uma cadeia cinemática aberta, simplificando a obtenção das transformações homogêneas sucessivas.
+Embora as transformações homogêneas permitam descrever a relação entre sistemas de coordenadas arbitrários, a modelagem direta de manipuladores com múltiplos elos pode tornar-se trabalhosa se não houver um procedimento sistemático para definir esses sistemas de referência. A Convenção de \textit{Denavit-Hartenberg} (DH) estabelece uma metodologia padronizada para a atribuição de sistemas de coordenadas aos elos de uma cadeia cinemática aberta, simplificando a obtenção das transformações homogêneas sucessivas~\cite{denavit1955,craig2005}.
 
 Para cada elo $i$ de um manipulador serial, são definidos quatro parâmetros:
 
@@ -110,7 +110,7 @@ Para cada elo $i$ de um manipulador serial, são definidos quatro parâmetros:
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8 \textwidth]{Imagens/2_Fundamentacao_teorica/esquema_dh.png}
-    \caption{Notação DH para cadeia cinemática.\cite{parametroDH}}
+    \caption{Notação DH para cadeia cinemática.}
     \label{fig:esquema_dh}
 \end{figure}
 
@@ -137,7 +137,7 @@ A Convenção de \textit{Denavit-Hartenberg} constitui, portanto, uma ferramenta
 
 \section{Cinemática Direta}
 
-A Cinemática Direta consiste na determinação da posição e orientação do efetuador final de um manipulador a partir do conhecimento das variáveis articulares. Em termos matemáticos, trata-se do mapeamento:
+A Cinemática Direta consiste na determinação da posição e orientação do efetuador final de um manipulador a partir do conhecimento das variáveis articulares~\cite{siciliano2009,craig2005}. Em termos matemáticos, trata-se do mapeamento:
 
 \begin{equation}
 \mathbf{q} \longrightarrow \, ^0\mathbf{T}_n
@@ -161,7 +161,7 @@ Portanto, a Cinemática Direta fornece uma relação explícita entre as variáv
 
 \section{Cinemática Inversa}
 \label{sec:cinematica_inversa}
-A Cinemática Inversa consiste na determinação das variáveis articulares necessárias para que o efetuador final atinja um determinado posicionamento desejado no espaço cartesiano. Diferentemente da Cinemática Direta, que envolve apenas a multiplicação sucessiva de matrizes homogêneas, a Cinemática Inversa conduz, em geral, a um conjunto de equações não lineares, cuja solução pode apresentar múltiplas configurações admissíveis.
+A Cinemática Inversa consiste na determinação das variáveis articulares necessárias para que o efetuador final atinja um determinado posicionamento desejado no espaço cartesiano. Diferentemente da Cinemática Direta, que envolve apenas a multiplicação sucessiva de matrizes homogêneas, a Cinemática Inversa conduz, em geral, a um conjunto de equações não lineares, cuja solução pode apresentar múltiplas configurações admissíveis~\cite{craig2005,siciliano2009}.
 
 Matematicamente, o problema pode ser descrito como o mapeamento inverso:
 
@@ -171,7 +171,7 @@ Matematicamente, o problema pode ser descrito como o mapeamento inverso:
 
 onde $^0\mathbf{T}_n$ representa a transformação homogênea desejada do efetuador final e $\mathbf{q} = [q_1, q_2, \dots, q_n]^T$ é o vetor de coordenadas de juntas.
 
-De modo geral, não existe uma solução analítica simples para manipuladores arbitrários, sendo frequentemente empregados métodos numéricos iterativos. Entretanto, para uma classe importante de manipuladores industriais com seis graus de liberdade e punho esférico, isto é, quando os três últimos eixos de rotação intersectam-se em um único ponto, é possível obter uma solução analítica por meio do desacoplamento entre posição e orientação.
+De modo geral, não existe uma solução analítica simples para manipuladores arbitrários, sendo frequentemente empregados métodos numéricos iterativos. Entretanto, para uma classe importante de manipuladores industriais com seis graus de liberdade e punho esférico, isto é, quando os três últimos eixos de rotação intersectam-se em um único ponto, é possível obter uma solução analítica por meio do desacoplamento entre posição e orientação~\cite{pieper1968,spong2006}.
 
 Nessa abordagem, o problema é dividido em duas etapas. Primeiramente, determinam-se as três primeiras variáveis articulares a partir da posição do centro do punho. Em seguida, com base na orientação desejada do efetuador final, calculam-se as três últimas variáveis articulares, associadas ao punho esférico.
 
@@ -190,7 +190,7 @@ Após a determinação das configurações articulares necessárias para atingir
 
 O planejamento pode ser realizado tanto no espaço cartesiano quanto no espaço das juntas. No presente trabalho, considera-se a interpolação no espaço de juntas, em que cada variável $q_i(t)$ é descrita em função do tempo. Para uma trajetória formada por vários segmentos, busca-se garantir, nas junções entre trechos consecutivos, a continuidade da posição e da velocidade. A aceleração é calculada a partir da segunda derivada do polinômio e pode apresentar descontinuidades nos pontos intermediários.
 
-Uma abordagem amplamente empregada consiste na utilização de polinômios para garantir continuidade de posição e velocidade ao longo do movimento. Entre as alternativas possíveis, o polinômio cúbico apresenta-se como solução adequada quando se deseja impor condições de posição inicial e final, bem como velocidades inicial e final especificadas.
+Uma abordagem amplamente empregada consiste na utilização de polinômios para garantir continuidade de posição e velocidade ao longo do movimento~\cite{craig2005,siciliano2009}. Entre as alternativas possíveis, o polinômio cúbico apresenta-se como solução adequada quando se deseja impor condições de posição inicial e final, bem como velocidades inicial e final especificadas.
 
 Assim, para uma junta genérica $q(t)$, pode-se escrever uma função do terceiro grau:
 
@@ -258,7 +258,7 @@ Cabe destacar que o polinômio cúbico não é a única função possível para 
 \subsection {Robôs humanóides com Inteligência Artificial (VLA)}
 
 
-A tendência recente de emprego de robôs humanóides na execução de tarefas industriais, resultou no desenvolvimento de uma nova geração de modelos de inteligência artificial que integram três capacidades fundamentais em um único sistema para dar "inteligência geral" a estes robôs. Estes modelos são denominados VLA (\textit{Vision-Language-Action}) ou Visão-Linguagem-Ação.
+A tendência recente de emprego de robôs humanóides na execução de tarefas industriais, resultou no desenvolvimento de uma nova geração de modelos de inteligência artificial que integram três capacidades fundamentais em um único sistema para dar "inteligência geral" a estes robôs. Estes modelos são denominados VLA (\textit{Vision-Language-Action}) ou Visão-Linguagem-Ação~\cite{rt2_2023,openvla_2024}.
 \abbrev{VLA}{Vision-Language-Action}
 
 \textbf{Visão:} O robô utiliza câmeras, LiDAR (\textit{Light Detection and Ranging}) e algoritmos de visão computacional para compreender o ambiente ao seu redor, identificando objetos e obstáculos.

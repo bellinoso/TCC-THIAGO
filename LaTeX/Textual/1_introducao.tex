@@ -10,7 +10,7 @@ Este trabalho propõe o desenvolvimento de uma ferramenta \textit{web} para visu
 
 A disciplina de automação e robótica envolve conteúdos que exigem forte capacidade de abstração espacial e interpretação matemática. Muitos estudantes demonstram dificuldade em compreender como alterações nos parâmetros articulares influenciam a posição e orientação do efetuador final. Essa lacuna entre a formulação teórica e a visualização prática pode impactar negativamente o processo de aprendizagem.
 
-Além disso, softwares comerciais de simulação robótica, embora robustos, costumam apresentar custo elevado, interfaces complexas ou requisitos computacionais significativos, o que pode limitar seu uso em ambientes acadêmicos. Há, portanto, a necessidade de uma solução acessível, de fácil utilização e voltada especificamente ao contexto didático.
+Além disso, softwares comerciais de simulação robótica, como o \textit{RoboDK}~\cite{robodk}, o \textit{CoppeliaSim}~\cite{coppeliasim}, o \textit{Gazebo}~\cite{gazebo2004} e o \textit{Robotics Toolbox} para \textit{MATLAB}~\cite{corke2011toolbox}, embora robustos, costumam apresentar custo elevado, interfaces complexas ou requisitos computacionais significativos, o que pode limitar seu uso em ambientes acadêmicos. Ferramentas de caráter didático, como o \textit{RoboAnalyzer}~\cite{roboanalyzer}, buscam reduzir essa barreira, porém ainda exigem instalação local. Há, portanto, a necessidade de uma solução acessível, de fácil utilização e voltada especificamente ao contexto didático.
 
 A motivação deste trabalho reside na criação de um recurso complementar ao ensino tradicional, que permita ao aluno manipular variáveis em tempo real, observar o comportamento do manipulador e consolidar a compreensão dos fundamentos de cinemática e movimentação de braços robóticos. Ao proporcionar uma experiência visual e interativa, busca-se reduzir a barreira conceitual e tornar o aprendizado mais efetivo.
 
@@ -39,7 +39,7 @@ A metodologia adotada baseia-se no desenvolvimento de uma aplicação \textit{we
 \abbrev{WebGL}{Web Graphics Library}
 \abbrev{STL}{Standard Tessellation Language}
 
-Para a renderização e animação tridimensional do braço robótico, será utilizada a biblioteca \textit{Babylon.js}~\cite{babylonjs}, que permite a criação de ambientes 3D diretamente no navegador, por meio de \textit{WebGL}. Essa biblioteca possibilita a modelagem de objetos, aplicação de transformações espaciais, definição de hierarquias entre componentes e controle de animações, sendo adequada para a representação de manipuladores articulados.
+Para a renderização e animação tridimensional do braço robótico, será utilizada a biblioteca \textit{Babylon.js}~\cite{babylonjs}, que permite a criação de ambientes 3D diretamente no navegador, por meio de \textit{WebGL}~\cite{webgl}. Essa biblioteca possibilita a modelagem de objetos, aplicação de transformações espaciais, definição de hierarquias entre componentes e controle de animações, sendo adequada para a representação de manipuladores articulados.
 
 As partes que compõem o manipulador 3D foram desenhadas na ferramenta \textit{web} de \textit{Computer-Aided Design} (CAD) \textit{Onshape}~\cite{onshape}.
 \abbrev{CAD}{Computer Aided Design}

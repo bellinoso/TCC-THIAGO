@@ -1,6 +1,6 @@
 \chapter{Conclusão}
 
-Este trabalho apresentou o desenvolvimento de um simulador interativo para estudo da cinemática de manipuladores robóticos seriais com seis graus de liberdade. A ferramenta foi implementada como uma aplicação \textit{web} executada diretamente no navegador, utilizando tecnologias amplamente acessíveis como \textit{HTML}, \textit{CSS} e \textit{JavaScript}, juntamente com a biblioteca gráfica \textit{Babylon.js} para renderização tridimensional.
+Este trabalho apresentou o desenvolvimento de um simulador interativo para estudo da cinemática de manipuladores robóticos seriais com seis graus de liberdade. A ferramenta foi implementada como uma aplicação \textit{web} executada diretamente no navegador, utilizando tecnologias amplamente acessíveis como \textit{HTML}, \textit{CSS} e \textit{JavaScript}, juntamente com a biblioteca gráfica \textit{Babylon.js}~\cite{babylonjs} para renderização tridimensional.
 
 O sistema desenvolvido integra diferentes aspectos fundamentais da robótica manipuladora. Inicialmente, foi realizada a modelagem cinemática do manipulador com base na Convenção de \textit{Denavit-Hartenberg}, permitindo a descrição matemática da cadeia cinemática e a obtenção da transformação homogênea do efetuador final. A partir dessa modelagem, foram implementados os algoritmos de cinemática direta e cinemática inversa, sendo esta última baseada em uma solução analítica viabilizada pela configuração de punho esférico do manipulador.
 
@@ -26,8 +26,8 @@ Dessa forma, a ferramenta pode ser utilizada como recurso complementar na discip
 
 O conceito de gêmeo digital refere-se à criação de um modelo virtual que representa um sistema físico real. No contexto da robótica, isso envolve a construção de uma simulação capaz de reproduzir o comportamento de um manipulador, incluindo sua estrutura mecânica, movimentos e condições operacionais.
 
-O uso de gêmeos digitais permite a realização de testes em ambiente virtual antes da implementação no sistema físico, contribuindo para a redução de riscos e a otimização de trajetórias e processos. Além disso, possibilita a identificação de gargalos operacionais, o treinamento em ambiente simulado e, em aplicações mais avançadas, a antecipação de necessidades de manutenção.
-Nesse contexto, o simulador desenvolvido neste trabalho pode ser interpretado como um passo inicial para a implementação de um gêmeo digital, uma vez que permite a análise e validação do comportamento do robô em ambiente virtual. \textcolor{red}{[REFERENCIA]}
+O uso de gêmeos digitais permite a realização de testes em ambiente virtual antes da implementação no sistema físico, contribuindo para a redução de riscos e a otimização de trajetórias e processos. Além disso, possibilita a identificação de gargalos operacionais, o treinamento em ambiente simulado e, em aplicações mais avançadas, a antecipação de necessidades de manutenção~\cite{tao2019digitaltwin}.
+Nesse contexto, o simulador desenvolvido neste trabalho pode ser interpretado como um passo inicial para a implementação de um gêmeo digital, uma vez que permite a análise e validação do comportamento do robô em ambiente virtual.
 
 Como evolução futura, o modelo pode ser integrado a um sistema físico por meio da utilização de dados em tempo real, estabelecendo uma correspondência entre o modelo virtual e o robô real. Essa integração permitiria não apenas a simulação, mas também o monitoramento e a otimização contínua da operação, aproximando-se do conceito completo de gêmeo digital.
 

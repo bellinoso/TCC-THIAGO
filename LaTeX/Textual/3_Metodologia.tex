@@ -13,8 +13,8 @@ A aplicação foi desenvolvida utilizando as seguintes tecnologias:
     \item \textbf{\textit{HTML}}: responsável pela estruturação dos elementos da interface;
     \item \textbf{\textit{CSS}}: utilizado para organização visual e disposição dos componentes na página;
     \item \textbf{\textit{JavaScript}}: empregado na implementação da lógica do sistema;
-    \item \textbf{\textit{Babylon.js}}: biblioteca gráfica baseada em \textit{WebGL} utilizada para renderização tridimensional e manipulação da cena;
-    \item \textbf{\textit{Chart.js}}: biblioteca utilizada para geração dos gráficos de posição, velocidade e aceleração das juntas.
+    \item \textbf{\textit{Babylon.js}}~\cite{babylonjs}: biblioteca gráfica baseada em \textit{WebGL} utilizada para renderização tridimensional e manipulação da cena;
+    \item \textbf{\textit{Chart.js}}~\cite{chartjs}: biblioteca utilizada para geração dos gráficos de posição, velocidade e aceleração das juntas.
 \end{itemize}
 
 Toda a execução ocorre no lado do cliente (\textit{client-side}), sendo o navegador responsável tanto pelo processamento matemático quanto pela renderização gráfica em tempo real.
@@ -137,7 +137,7 @@ Foram modelados os principais elementos estruturais do manipulador, incluindo ba
     \includegraphics[width=1\textwidth]{Imagens/3_Metodologia/OnShape_Assembly.png}
     \caption{Desenho esquemático das juntas e sistemas de refere}
     \caption{Modelo CAD do manipulador serial 6R desenvolvido no \textit{Onshape}.}
-    \label{fig:esquema_eixos}
+    \label{fig:OnShape_Assembly}
 \end{figure}
 
 Após a modelagem, os componentes foram exportados no formato STL. Esses arquivos foram importados para o ambiente tridimensional da aplicação \textit{web}, onde foram realizados ajustes de orientação inicial e posicionamento relativo, garantindo alinhamento com a estrutura cinemática implementada.
